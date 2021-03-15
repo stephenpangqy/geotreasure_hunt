@@ -29,8 +29,7 @@ create table user_inventory (
     itemname varchar(100) not null,
     quantity int not null,
     
-    constraint primary key (username,itemname),
-    constraint foreign key fk1 (username) references users(username)
+    constraint primary key (username,itemname)
 );
 
 drop database if exists ingame_shop;
@@ -39,9 +38,14 @@ use ingame_shop;
 
 create table in_game_shop_items (
     itemname varchar(100) not null primary key,
-    itemprice varchar(100) not null,
+    itemprice int not null,
     itemdesc varchar(300) not null
 );
+
+# ADDING SAMPLE SHOP ITEM DATA
+INSERT INTO in_game_shop_items VALUES ('$20 Gongcha Voucher', 250, 'Redeem this to get a $20 Gongcha Voucher.');
+INSERT INTO in_game_shop_items VALUES ('Straw', 3, 'A simple straw.');
+INSERT INTO in_game_shop_items VALUES ('$10 GrabVoucher', 100, 'Redeem this to get a $10 Voucher that you can use on Grab.');
 
 
 drop database if exists box;
