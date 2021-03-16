@@ -261,7 +261,7 @@ def openbox(username):
 
 @app.route("/user/purchase/<string:username>", methods=['PUT']) ## FUNCTION NEEDS TO BE FIXED!!!!
 def purchase(username):
-    # DATA PASSED THROUGH { [ {itemname,price,quantity}, {itemname,price,quantity}, ...] }
+    # DATA PASSED THROUGH { data: [ {itemname,price,quantity}, {itemname,price,quantity}, ...] }
     data = request.get_json()
     #get record for user
     user = users.query.filter_by(username=username).first()
@@ -285,7 +285,7 @@ def purchase(username):
             if user_balance >= subtotal:
                 # Updating user's balance
                 try:
-                    user_balance -= subtotal
+                    user.current_points -= subtotal
                     db.session.commit()
                 except Exception as e:
                     return jsonify({
@@ -296,11 +296,12 @@ def purchase(username):
                 # Update user's inventory
                 for item_dict in cart:
                     content = user_inventory.query.filter_by(username=username,itemname=item_dict['itemname']).first()
-                    if content != "":
+                    if content == None:
                         createcontent = user_inventory(username, item_dict['itemname'], item_dict['quantity'])
                         try:
                             db.session.add(createcontent)
                             db.session.commit()
+                            del createcontent
                         except Exception as e:
                             # return error when fail to insert
                             return jsonify(
@@ -321,7 +322,6 @@ def purchase(username):
                                     "message": "an error occurred updating user inventory" + str(e)
                                 }
                             ), 500
-                    
                 return jsonify({
                     "code":201,
                     "message": "Purchase is successful. Your items have been added to your inventory."
@@ -349,4 +349,4 @@ def purchase(username):
     ),404
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app.run(port=5004, debug=True)
