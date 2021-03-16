@@ -13,7 +13,9 @@ connection = pika.BlockingConnection(
 channel = connection.channel()
 
 #scenarios: ourchasing incentives, planting virtual box, opening box, purchasing membership
-#microservices: error, activity
+#microservices (queues) : error, activity
+#microservices (message provider) : order, box, box opening, subscription 
+
 exchangename = "order_topic"
 exchangetype = "topic" 
 channel.exchange_declare(exchange=exchangename, exchange_type=exchangetype, durable=True)
@@ -26,7 +28,7 @@ channel.queue_bind(exchange=exchangename, queue=queue_name, routing_key='*.error
 # ------------      Activity log Queue     ------------ #
 queue_name = 'Activity_log'
 channel.queue_declare(queue=queue_name, durable=True)
-channel.queue_bind(exchange=exchangename, queue=queue_name, routing_key='#')
+channel.queue_bind(exchange=exchangename, queue=queue_name, routing_key='*.log')
 
 # ------------ Re-establish Connection ------------- #
 def check_setup():

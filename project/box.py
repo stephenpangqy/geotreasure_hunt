@@ -54,13 +54,22 @@ def create_box():
     try:
         db.session.add(box)
         db.session.commit()
+
+        #AQMP Activity Log
+
     except Exception as e:
+        message = str(e)
+        # Logs into the Error log via AMQP
+        # not logging fail creation message into AMQP anymore as not useful data
+
         return jsonify(
             {
                 "code": 500,
                 "message": "An error occurred while creating the order. " + str(e)
+                # print to ui
             }
         ),500
+        
     
     return jsonify(
         {
@@ -89,6 +98,7 @@ def find_box():
                 {
                     "code": 404,
                     "message": "There is no box nearby."
+                    # need print this to UI
                 }
             ),404
     except Exception as e:
@@ -96,6 +106,7 @@ def find_box():
             {
                 "code": 500,
                 "message": "An error occurred while searching for a box: " + str(e)
+                # need print this to UI
             }
         ),500
 
