@@ -1,45 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Ensures optimal rendering on mobile devices. -->
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" /> <!-- Optimal Internet Explorer compatibility -->
-      </head>
-      
-      <body>
-        <script
-          src="https://www.paypal.com/sdk/js?client-id=AXQ-k9ZAyp92h07O6IrB-xvUbZW07AS0fwbH-0m2RIlAAFuKg20Wwrfkwv8iRvFCWgcBkLr-HYJnZDMH&currency=SGD"> // Required. Replace YOUR_CLIENT_ID with your sandbox client ID.
-        </script>
+{% extends "bootstrap/base.html" %}
 
-        <div id="paypal-button-container"></div>
+{% block title %}
+Demo App
+{% endblock %}
 
-        <script>
-          var PAYPAL_CLIENT = 'AXQ-k9ZAyp92h07O6IrB-xvUbZW07AS0fwbH-0m2RIlAAFuKg20Wwrfkwv8iRvFCWgcBkLr-HYJnZDMH';
-          var PAYPAL_SECRET = 'EE6lGjs5Bp--CO_ogtpiIwKoCa0J7Z680gepVJGVAdpGCjaHTpzvJi7mp7BWr1Ez9UBq9ANUxE1UqRMS';
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='starter-template.css')}}">
+{% endblock %}
 
-          var PAYPAL_ORDER_API = 'https://api-m.paypal.com/v2/checkout/orders/';
+{% block content %}
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Project name</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="{{ url_for('login') }}">Login</a></li>
+            <li><a href="{{ url_for('signup') }}">Sign Up</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
 
-            paypal.Buttons({
-              createOrder: function(data, actions) {
-                // This function sets up the details of the transaction, including the amount and line item details.
-                return actions.order.create({
-                  purchase_units: [{
-                    description: 'GeoTreasure Membership',
-                    amount: {
-                      value: '0.50' // MUST CHANGE TO PRICE OF MEMBERSHIP
-                    }
-                  }]
-                });
-              },
-              onApprove: function(data, actions) {
-                // This function captures the funds from the transaction.
-                return actions.order.capture().then(function(details) {
-                  // This function shows a transaction success message to your buyer.
-                  alert('Transaction completed by ' + details.payer.name.given_name);
-                  window.location.replace("payment");
-                });
-              }
-            }).render('#paypal-button-container');
-            //This function displays Smart Payment Buttons on your web page.
-          </script>
-      </body>
-</html>
+    <div class="container">
+
+      <div class="starter-template">
+        <h1>Bootstrap starter template</h1>
+        <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
+      </div>
+
+    </div><!-- /.container -->
+{% endblock %}

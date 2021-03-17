@@ -1,8 +1,15 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from os import environ
 import requests
 from datetime import datetime
+
+from flask_bootstrap import Bootstrap
+from flask_wtf import FlaskForm 
+from wtforms import StringField, PasswordField, BooleanField
+from wtforms.validators import InputRequired, Email, Length
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 app = Flask(__name__)
 
@@ -10,25 +17,35 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/user'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+#changes for user account
+app.config['SECRET_KEY'] = 'Thisissupposedtobesecret!'
+bootstrap = Bootstrap(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
 db = SQLAlchemy(app)
 
-class users(db.Model):
+class users(UserMixin,db.Model):
     __tablename__ = 'users'
-
-    username = db.Column(db.String(300), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(300), unique=True)
+    password = db.Column(db.String(80), nullable=False)
     is_member = db.Column(db.String(1), nullable=False)
     membership_date = db.Column(db.Date)
     current_points = db.Column(db.Integer)
     total_points = db.Column(db.Integer)
     boxes_open = db.Column(db.Integer)
 
-    def __init__(self, username, is_member, membership_date,current_points,total_points, boxes_open):
-        self.username = username
-        self.is_member = is_member
-        self.membership_date = membership_date
-        self.current_points = current_points
-        self.total_points = total_points
-        self.boxes_open = boxes_open
+    # def __init__(self, id, username, password, is_member, membership_date,current_points,total_points, boxes_open):
+    #     self.id = id
+    #     self.username = username
+    #     self.password = password
+    #     self.is_member = is_member
+    #     self.membership_date = membership_date
+    #     self.current_points = current_points
+    #     self.total_points = total_points
+    #     self.boxes_open = boxes_open
 
     def json(self):
         return {
@@ -188,19 +205,16 @@ def updatemembership(username):
 
 @app.route("/user/openbox/<string:username>", methods=['PUT'])
 def openbox(username):
-    # DATA PASSED THROUGH {
-    #   code,
-    #   result: { box_contents, box_latitude, box_longitude, boxid, is_opened, no_of_points, planted_by_username}
-    # }
+    # DATA PASSED THROUGH { box_contents, box_latitude, box_longitude, boxid, is_opened, no_of_points, planted_by_username }
     #get record for user
     points = users.query.filter_by(username=username).first()
 
     #get box stuff from content 
     data = request.get_json()
-    itemname = data['result']['box_contents']
+    itemname = data['box_contents']
     #get record of the user inventory
     content = ""
-    if itemname != "":
+    if itemname != None:
         content = user_inventory.query.filter_by(username=username, itemname=itemname).first()
     
 
@@ -212,7 +226,7 @@ def openbox(username):
             if itemname == content.itemname:
                 #update quantity
                 content.quantity += 1
-        elif content != "" and itemname != "":
+        elif content != "" and itemname != None:
             #print("hello")
             #if no record found need to create one
             createcontent = user_inventory(username, itemname, 1)
@@ -231,8 +245,8 @@ def openbox(username):
         #update user point in user db
         #check if requested user is sync with db user
         #update points of the user
-        points.total_points += data['result']['no_of_points']
-        points.current_points += data['result']['no_of_points']
+        points.total_points += data['no_of_points']
+        points.current_points += data['no_of_points']
         #update user number of boxes open
         points.boxes_open += 1
         db.session.commit()
@@ -243,7 +257,7 @@ def openbox(username):
                 "code":201,
                 "data":{
                     "item_won": itemname,
-                    "points_earned": data['result']['no_of_points']
+                    "points_earned": data['no_of_points']
                 }
             }
         ),201
@@ -259,17 +273,12 @@ def openbox(username):
     ),404
 
 
-@app.route("/user/purchase/<string:username>", methods=['PUT']) ## FUNCTION NEEDS TO BE FIXED!!!!
+@app.route("/user/purchase/<string:username>", methods=['PUT'])
 def purchase(username):
     # DATA PASSED THROUGH { data: [ {itemname,price,quantity}, {itemname,price,quantity}, ...] }
     data = request.get_json()
     #get record for user
     user = users.query.filter_by(username=username).first()
-
-    #get record of the user inventory
-    # content = ""
-    # if itemname != "":
-    #     content = user_inventory.query.filter_by(username=username, itemname=itemname).first()
 
     #check if there is such user is in our user database
     if user:
@@ -348,5 +357,66 @@ def purchase(username):
         }
     ),404
 
+
+# LOGIN ROUTES #
+@login_manager.user_loader
+def load_user(user_id):
+    return users.query.get(int(user_id))
+
+class LoginForm(FlaskForm):
+    username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
+    password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
+
+class RegisterForm(FlaskForm):
+    username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
+    password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
+
+@app.route('/', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        user = users.query.filter_by(username=form.username.data).first()
+        if user:
+            if check_password_hash(user.password, form.password.data):
+                login_user(user)
+                return redirect(url_for('dashboard'))
+
+        return '<h1>Invalid username or password</h1> <br> <br> <a href="/"><< Go back</a>'
+        #return '<h1>' + form.username.data + ' ' + form.password.data + '</h1>'
+
+    return render_template('login.html', form=form)
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    form = RegisterForm()
+
+    if form.validate_on_submit():
+        # Check if username already exists
+        exist_user = users.query.filter_by(username=form.username.data).first()
+        if exist_user:
+            return "<h1>Username already exists, please select a new one. <br> <br> <a href='/signup'> << Go back </a>"
+        hashed_password = generate_password_hash(form.password.data, method='sha256')
+        new_user = users(username=form.username.data, password=hashed_password, is_member='N', membership_date=None,current_points=0,total_points=0, boxes_open=0)
+        db.session.add(new_user)
+        db.session.commit()
+
+        login_user(new_user)
+        return redirect(url_for('dashboard'))
+        #return '<h1>' + form.username.data + ' ' + form.email.data + ' ' + form.password.data + '</h1>'
+
+    return render_template('signup.html', form=form)
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html', name=current_user.username)
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
 if __name__ == '__main__':
-    app.run(port=5004, debug=True)
+    app.run(host="0.0.0.0",port=5004, debug=True)

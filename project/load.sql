@@ -3,26 +3,30 @@ create database user;
 use user;
 
 create table users (
-	username varchar(300) not null primary key,
-    is_member char(1) not null, # Y for Yes, # N for No
-    membership_date date,
-    current_points int,
-    total_points int,
-    boxes_open int
+  id int AUTO_INCREMENT primary key,
+	username varchar(300) not null,
+  password varchar(80) not null,
+  is_member char(1) not null, # Y for Yes, # N forNo
+  membership_date date,
+  current_points int,
+  total_points int,
+  boxes_open int,
+
+  UNIQUE(username)
 );
 
 # ADDING SAMPLE user data
-INSERT into users VALUES ('Sarah Baumert', 'N', null, 235, 500, 2);
-INSERT into users VALUES ('Michelle', 'N', null, 5555, 5555, 5);
-INSERT into users VALUES ('Meghan', 'N', null, 234, 556, 1);
-INSERT into users VALUES ('Christine', 'N', null, 22, 55, 0);
-INSERT into users VALUES ('Mieka', 'N', null, 3, 3, 0);
-INSERT into users VALUES ('Lunatone', 'N', null, 112, 112, 5);
-INSERT into users VALUES ('Torrence', 'N', null, 2414, 5323, 12);
-INSERT into users VALUES ('Monique', 'N', null, 44, 52, 3);
-INSERT into users VALUES ('Yuri', 'N', null, 1253, 1530, 8);
-INSERT into users VALUES ('Alison', 'N', null, 502, 502, 4);
-INSERT into users VALUES ('Chrissa','N', null, 0, 2, 0);
+INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open) VALUES ('Sarah Baumert','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 235, 500, 2);
+INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Michelle','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 5555, 5555, 5);
+INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Meghan','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 234, 556, 1);
+INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Christine','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 22, 55, 0);
+INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Mieka','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 3, 3, 0);
+INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Lunatone','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 112, 112, 5);
+INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Torrence','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 2414, 5323, 12);
+INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Monique','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 44, 52, 3);
+INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Yuri','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 1253, 1530, 8);
+INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Alison','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 502, 502, 4);
+INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Chrissa','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8','N', null, 0, 2, 0);
 
 create table user_inventory (
 	  username varchar(300) not null,
@@ -61,6 +65,13 @@ create table box (
     planted_by_username varchar(300) not null,
     is_opened char(1) # Y for Opened, N for not opened
 );
+
+# SAMPLE BOX DATA
+INSERT INTO box (box_contents,no_of_points,box_latitude,box_longitude,planted_by_username,is_opened) VALUES ('$30 GrabVoucher',54,1.2345,1.5345,'Michelle','N');
+INSERT INTO box (box_contents,no_of_points,box_latitude,box_longitude,planted_by_username,is_opened) VALUES (null,203,1.4567,1.8924,'Michelle','N');
+INSERT INTO box (box_contents,no_of_points,box_latitude,box_longitude,planted_by_username,is_opened) VALUES ('1-for-1 GongCha Voucher',100,0.9343,0.82354,'Michelle','N');
+INSERT INTO box (box_contents,no_of_points,box_latitude,box_longitude,planted_by_username,is_opened) VALUES (null,123,1.456,1.4555,'Meghan','N');
+INSERT INTO box (box_contents,no_of_points,box_latitude,box_longitude,planted_by_username,is_opened) VALUES ('1-for-1 GongCha Voucher',100,1.29838869,103.856419,'Michelle','N');
 
 drop database if exists ActivityLog;
 create database ActivityLog;

@@ -15,15 +15,15 @@ def getGeoLocation():
                 "result": r.json()
                 # Checking of status code will be done in the other microservice.
             }
-        ), 200
+        )
     except Exception as e:
         return jsonify (
             {
                 "code": 500,
-                "message": "An error occurred while obtaining user's geolocation: " + str(e)
+                "result": "An error occurred while obtaining user's geolocation: " + str(e)
             }
-        ), 500
+        )
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True)
