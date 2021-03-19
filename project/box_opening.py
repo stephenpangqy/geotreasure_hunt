@@ -12,7 +12,7 @@ app = Flask(__name__)
 CORS(app)
 
 # TEMP USERNAME: Need to figure out a way to update or pass this
-username = 'Meghan'
+username = 'Michelle'
 
 @app.route("/")
 def OpenNearbyBox():

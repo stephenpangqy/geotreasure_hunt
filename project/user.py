@@ -191,7 +191,6 @@ def updatemembership(username):
             }
         ),403
 
-
     #return error for user not found
     return jsonify(
         {
@@ -359,64 +358,64 @@ def purchase(username):
 
 
 # LOGIN ROUTES #
-@login_manager.user_loader
-def load_user(user_id):
-    return users.query.get(int(user_id))
+# @login_manager.user_loader
+# def load_user(user_id):
+#     return users.query.get(int(user_id))
 
-class LoginForm(FlaskForm):
-    username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
-    password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
+# class LoginForm(FlaskForm):
+#     username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
+#     password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
 
-class RegisterForm(FlaskForm):
-    username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
-    password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
+# class RegisterForm(FlaskForm):
+#     username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
+#     password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
 
-@app.route('/', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
+# @app.route('/', methods=['GET', 'POST'])
+# def login():
+#     form = LoginForm()
 
-    if form.validate_on_submit():
-        user = users.query.filter_by(username=form.username.data).first()
-        if user:
-            if check_password_hash(user.password, form.password.data):
-                login_user(user)
-                return redirect(url_for('dashboard'))
+#     if form.validate_on_submit():
+#         user = users.query.filter_by(username=form.username.data).first()
+#         if user:
+#             if check_password_hash(user.password, form.password.data):
+#                 login_user(user)
+#                 return redirect(url_for('dashboard'))
 
-        return '<h1>Invalid username or password</h1> <br> <br> <a href="/"><< Go back</a>'
-        #return '<h1>' + form.username.data + ' ' + form.password.data + '</h1>'
+#         return '<h1>Invalid username or password</h1> <br> <br> <a href="/"><< Go back</a>'
+#         #return '<h1>' + form.username.data + ' ' + form.password.data + '</h1>'
 
-    return render_template('login.html', form=form)
+#     return render_template('login.html', form=form)
 
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    form = RegisterForm()
+# @app.route('/signup', methods=['GET', 'POST'])
+# def signup():
+#     form = RegisterForm()
 
-    if form.validate_on_submit():
-        # Check if username already exists
-        exist_user = users.query.filter_by(username=form.username.data).first()
-        if exist_user:
-            return "<h1>Username already exists, please select a new one. <br> <br> <a href='/signup'> << Go back </a>"
-        hashed_password = generate_password_hash(form.password.data, method='sha256')
-        new_user = users(username=form.username.data, password=hashed_password, is_member='N', membership_date=None,current_points=0,total_points=0, boxes_open=0)
-        db.session.add(new_user)
-        db.session.commit()
+#     if form.validate_on_submit():
+#         # Check if username already exists
+#         exist_user = users.query.filter_by(username=form.username.data).first()
+#         if exist_user:
+#             return "<h1>Username already exists, please select a new one. <br> <br> <a href='/signup'> << Go back </a>"
+#         hashed_password = generate_password_hash(form.password.data, method='sha256')
+#         new_user = users(username=form.username.data, password=hashed_password, is_member='N', membership_date=None,current_points=0,total_points=0, boxes_open=0)
+#         db.session.add(new_user)
+#         db.session.commit()
 
-        login_user(new_user)
-        return redirect(url_for('dashboard'))
-        #return '<h1>' + form.username.data + ' ' + form.email.data + ' ' + form.password.data + '</h1>'
+#         login_user(new_user)
+#         return redirect(url_for('dashboard'))
+#         #return '<h1>' + form.username.data + ' ' + form.email.data + ' ' + form.password.data + '</h1>'
 
-    return render_template('signup.html', form=form)
+#     return render_template('signup.html', form=form)
 
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    return render_template('dashboard.html', name=current_user.username)
+# @app.route('/dashboard')
+# @login_required
+# def dashboard():
+#     return render_template('dashboard.html', name=current_user.username)
 
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('login'))
+# @app.route('/logout')
+# @login_required
+# def logout():
+#     logout_user()
+#     return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=5004, debug=True)
