@@ -56,22 +56,13 @@ def create_box():
     try:
         db.session.add(box)
         db.session.commit()
-
-        #AQMP Activity Log
-
     except Exception as e:
-        message = str(e)
-        # Logs into the Error log via AMQP
-        # not logging fail creation message into AMQP anymore as not useful data
-
         return jsonify(
             {
                 "code": 500,
                 "message": "An error occurred while creating the order. " + str(e)
-                # print to ui
             }
         ),500
-        
     
     # return amqp.channel.basic_publish(exchange=amqp.exchangename, routing_key="activity.info", 
     #         body=message)
@@ -92,9 +83,9 @@ def create_box():
 def find_box():
     query_params = request.args
     #print(query_params)
-    latitude = query_params['latitude']
-    longitude = query_params['longitude']
-    box = Box.query.filter(Box.box_latitude.like(latitude[0:5] + "%"),Box.box_longitude.like(longitude[0:5] + "%")).first()
+    latitude = str(query_params['latitude'])
+    longitude = str(query_params['longitude'])
+    box = Box.query.filter(Box.box_latitude.like(latitude[0:5] + "%"),Box.box_longitude.like(longitude[0:5] + "%"),Box.is_opened.like("N")).first()
     try:
         if box != None:
             return jsonify(
@@ -114,7 +105,6 @@ def find_box():
                 {
                     "code": 404,
                     "message": "There is no box nearby."
-                    # need print this to UI
                 }
             ),404
     except Exception as e:
@@ -122,13 +112,32 @@ def find_box():
             {
                 "code": 500,
                 "message": "An error occurred while searching for a box: " + str(e)
-                # need print this to UI
             }
         ),500
+
+# When opening box, change is_opened to 'Y'
+@app.route('/open',methods=['PUT'])
+def openBox():
+    # JSON TO PASS THROUGH { boxid }
+    try:
+        boxid = request.json.get('boxid')
+        box_details = Box.query.filter_by(boxid=boxid).first()
+        box_details.is_opened = 'Y'
+        db.session.commit()
+        return jsonify({
+            "code": 200,
+            "message": "Box status updated to open successfully."
+        }),200
+    except Exception as e:
+        return jsonify({
+            "code":500,
+            "message":"An error occurred while updating box status: " + str(e)
+        }),500
+
 
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5002, debug=True)
 
     
