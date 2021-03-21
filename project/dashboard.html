@@ -11,216 +11,198 @@
     <title>Document</title>
 </head>
 <body>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
 
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <nav class="navbar navbar-expand-lg sticky-top navbar-light bg-light ">
     <a class="navbar-brand" href="#">GeoHunt</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
-        <a class="nav-item nav-link" href="#">Rewards Shop</a>
+        <a class="nav-item nav-link active" href="dashboard.html">Home</a>
+        <a class="nav-item nav-link" href="order.html">Rewards Shop</a>
         <a class="nav-item nav-link" href="#">Box Hunt</a>
+        <a class="nav-item nav-link" href="leaderboard.html">Leaderboards</a>
         <a id="paying" class="nav-item nav-link" href="payment.html">Buy Membership</a>
       </div>
     </div>
   </nav>
 
-    <div class="container-fluid">
+    <input type='hidden' id='current' value='Michelle'>
+
+    <div class="container-fluid" id='app'>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <h1 class="page-header">Welcome, Michelle</h1>
+          <h1 class="page-header">Welcome, {{ user }}</h1>
 
           <div class="row placeholders">
-            <div class="col-xs-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-              <h4>Label</h4>
-              <span class="text-muted">Something else</span>
+            <div class="col-xs-8 col-sm-4 placeholder">
+              <img src="img/box.jpg" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+              <h4>You have opened {{ boxes_opened }} boxes</h4>
+              <span class="text-muted">Go for the Box Hunt to find some more!</span>
             </div>
-            <div class="col-xs-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-              <h4>Label</h4>
-              <span class="text-muted">Something else</span>
+            <div class="col-xs-8 col-sm-4 placeholder">
+              <img src="img/coins.jpg" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+              <h4>You have {{ current_points }} points in your wallet</h4>
+              <span class="text-muted">Spend them at the GeoHunt Shop!</span>
             </div>
-            <div class="col-xs-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-              <h4>Label</h4>
-              <span class="text-muted">Something else</span>
-            </div>
-            <div class="col-xs-6 col-sm-3 placeholder">
+            <div class="col-xs-8 col-sm-4 placeholder">
               <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
               <h4>Label</h4>
               <span class="text-muted">Something else</span>
             </div>
           </div>
 
-          <h2 class="sub-header">Section title</h2>
-          <div class="table-responsive">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Header</th>
-                  <th>Header</th>
-                  <th>Header</th>
-                  <th>Header</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>1,001</td>
-                  <td>Lorem</td>
-                  <td>ipsum</td>
-                  <td>dolor</td>
-                  <td>sit</td>
-                </tr>
-                <tr>
-                  <td>1,002</td>
-                  <td>amet</td>
-                  <td>consectetur</td>
-                  <td>adipiscing</td>
-                  <td>elit</td>
-                </tr>
-                <tr>
-                  <td>1,003</td>
-                  <td>Integer</td>
-                  <td>nec</td>
-                  <td>odio</td>
-                  <td>Praesent</td>
-                </tr>
-                <tr>
-                  <td>1,003</td>
-                  <td>libero</td>
-                  <td>Sed</td>
-                  <td>cursus</td>
-                  <td>ante</td>
-                </tr>
-                <tr>
-                  <td>1,004</td>
-                  <td>dapibus</td>
-                  <td>diam</td>
-                  <td>Sed</td>
-                  <td>nisi</td>
-                </tr>
-                <tr>
-                  <td>1,005</td>
-                  <td>Nulla</td>
-                  <td>quis</td>
-                  <td>sem</td>
-                  <td>at</td>
-                </tr>
-                <tr>
-                  <td>1,006</td>
-                  <td>nibh</td>
-                  <td>elementum</td>
-                  <td>imperdiet</td>
-                  <td>Duis</td>
-                </tr>
-                <tr>
-                  <td>1,007</td>
-                  <td>sagittis</td>
-                  <td>ipsum</td>
-                  <td>Praesent</td>
-                  <td>mauris</td>
-                </tr>
-                <tr>
-                  <td>1,008</td>
-                  <td>Fusce</td>
-                  <td>nec</td>
-                  <td>tellus</td>
-                  <td>sed</td>
-                </tr>
-                <tr>
-                  <td>1,009</td>
-                  <td>augue</td>
-                  <td>semper</td>
-                  <td>porta</td>
-                  <td>Mauris</td>
-                </tr>
-                <tr>
-                  <td>1,010</td>
-                  <td>massa</td>
-                  <td>Vestibulum</td>
-                  <td>lacinia</td>
-                  <td>arcu</td>
-                </tr>
-                <tr>
-                  <td>1,011</td>
-                  <td>eget</td>
-                  <td>nulla</td>
-                  <td>Class</td>
-                  <td>aptent</td>
-                </tr>
-                <tr>
-                  <td>1,012</td>
-                  <td>taciti</td>
-                  <td>sociosqu</td>
-                  <td>ad</td>
-                  <td>litora</td>
-                </tr>
-                <tr>
-                  <td>1,013</td>
-                  <td>torquent</td>
-                  <td>per</td>
-                  <td>conubia</td>
-                  <td>nostra</td>
-                </tr>
-                <tr>
-                  <td>1,014</td>
-                  <td>per</td>
-                  <td>inceptos</td>
-                  <td>himenaeos</td>
-                  <td>Curabitur</td>
-                </tr>
-                <tr>
-                  <td>1,015</td>
-                  <td>sodales</td>
-                  <td>ligula</td>
-                  <td>in</td>
-                  <td>libero</td>
-                </tr>
-              </tbody>
-            </table>
+          <h2 class="sub-header">Leaderboards</h2>
+          <div class="row placeholders">
+            <div class="col-xs-12 col-sm-6 placeholder">
+              <div class="table-responsive">
+                <h3>Total Points Scored</h3>
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>Total Points Earned</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(top, index) in top3_points">
+                      <td><img :src='trophy_images[index]' width=50 height=40></td>
+                      <td v-bind:style="{'font-weight': user === top.username ? 'bold':''}">{{ top.username }}</td>
+                      <td>{{ top.total_points }}</td>
+                    </tr>
+                    <tr v-if="top3_points_users.indexOf(user) === -1">
+                      <td v-if="top10_points.indexOf(user) === -1">-</td>
+                      <td v-else> {{ top10_points.indexOf(user) + 1 }}</td>
+                      <td style='font-weight:bold;'>{{ user }}</td>
+                      <td>{{ total_points }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="col-xs-12 col-sm-6 placeholder">
+              <div class="table-responsive">
+                <h3>Number of Boxes Opened</h3>
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>Boxes Opened</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(top2, index2) in top3_box">
+                      <td><img :src='trophy_images[index2]' width=50 height=40></td>
+                      <td v-bind:style="{'font-weight': user === top2.username ? 'bold':''}">{{ top2.username }}</td>
+                      <td>{{ top2.boxes_open }}</td>
+                    </tr>
+                    <tr v-if="top3_box_users.indexOf(user) === -1">
+                      <td v-if="top10_box.indexOf(user) === -1">-</td>
+                      <td v-else> {{ top10_box.indexOf(user) + 1 }}</td>
+                      <td style='font-weight:bold;'>{{ user }}</td>
+                      <td>{{ boxes_opened }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
     <script>
-      // Fetch a service
-      // Below is executed ONLY when document has fully loaded.
-      // $(async () => {
-      //     var serviceURL = "http://localhost:5000/student";
+      var user_URL = 'http://localhost:5004/user/'
+      var top10_URL = 'http://localhost:5004/user/leaderboardRank'
 
-      //     try {
+      var current_user = document.getElementById("current").value;
+      var app = new Vue({
+        el: "#app",
+        computed: {
 
-      //         const response = 
-      //         // await can only be done in an async function.
-      //             await fetch (
-      //                 // Forms a Promise.
-      //                 serviceURL, { method: 'GET' }
-      //             );
-              
-      //         if (!response.ok) {
-      //             // Prints an error if service dosnt work
-      //             $("#display").text("Error in retrieving student data");
-      //         }
-      //         else {
-      //             // succss in calling student service
-      //             const students = await response.json();
-      //             console.log(students);
-      //             for (i = 0; i < students.length ; i++) {
-      //                 $("#display").append("<br>" + students[i].Name)
-      //             }
-      //         }
+        },
+        data: {
+          "user": current_user,
+          "boxes_opened": "loading...",
+          "current_points": "loading...",
+          "total_points": "loading...",
+          "is_member": false,
+          "top3_points": [],
+          "top3_box": [],
+          "top3_points_users":[],
+          "top3_box_users":[],
+          "top10_points":[],
+          "top10_box":[],
+          "trophy_images": ['img/gold_trophy.jpg','img/silver_trophy.jpg','img/bronze_trophy.jpg']
 
-      //     } catch (error) { // This "catch" is executed when there is an error in the "try"
-      //         // print some error
-      //         $("#display").text("Error in retrieving student data, " + error);
-      //     }
-      // });
-      
 
-  </script>
+        },
+        methods: {
+          getUserData: async function() {
+            const response = 
+              await fetch(user_URL + this.user, {method: 'GET'});
+
+              if (!response.ok) {
+                console.log("Error");
+              }
+              else {
+                const user_data = await response.json();
+                console.log(user_data);
+                if (user_data.code != 200) {
+                  console.log("User not found!")
+                }
+                else {
+                  this.boxes_opened = user_data.user.boxes_open;
+                  this.current_points = user_data.user.current_points;
+                  this.total_points = user_data.user.total_points;
+                  if (user_data.user.is_member == "Y") {
+                    this.is_member = true;
+                  }
+                }
+              }
+          },
+          getTop3: async function() {
+            const response = 
+              await fetch(top10_URL, {method: 'GET'});
+
+              if (!response.ok) {
+                console.log("Error in retrieving top 3 board")
+              }
+              else {
+                const lb_data = await response.json();
+                if (lb_data.code != 200) {
+                  console.log("Error, no users found.")
+                }
+                else {
+                  for (i=0;i<lb_data.top10_points.length;i++) {
+                    this.top10_points.push(lb_data.top10_points[i].username);
+                    this.top10_box.push(lb_data.top10_boxes[i].username);
+                    if (i < 3) {
+                      this.top3_points_users.push(lb_data.top10_points[i].username);
+                      this.top3_box_users.push(lb_data.top10_boxes[i].username);
+                    }
+                  }
+                  console.log(this.top10_points);
+                  console.log(this.top10_box);
+                  console.log(this.top3_points_users);
+                  console.log(this.top3_box_users);
+                  console.log(this.top3_box_users.indexOf(this.user))
+
+                  this.top3_points = [ lb_data.top10_points[0], lb_data.top10_points[1], lb_data.top10_points[2] ];
+                  this.top3_box = [ lb_data.top10_boxes[0], lb_data.top10_boxes[1], lb_data.top10_boxes[2] ];
+                }
+
+              }
+          }
+        },
+        created: function() {
+          this.getUserData();
+          this.getTop3();
+        }
+      });
+    </script>
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>

@@ -4,7 +4,6 @@ from flask_cors import CORS
 from invokes import invoke_http
 import requests
 import random
-import amqp.py
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/box'
@@ -46,7 +45,6 @@ def create_box():
     no_of_prize = random.randint(0,1)
     prize_list = ['$5 GrabVoucher','$10 GrabVoucher','20% OFF Popular Voucher','1-for-1 LiHo Tea Voucher','1-for-1 Gong Cha']
     box_prizes = []
-    # why use i forloop when never used i in it
     for i in range(0,no_of_prize):
         index = random.randint(0,len(prize_list)-1)
         box_prizes.append(prize_list[index])
@@ -64,20 +62,12 @@ def create_box():
             }
         ),500
     
-    # return amqp.channel.basic_publish(exchange=amqp.exchangename, routing_key="activity.info", 
-    #         body=message)
     return jsonify(
         {
             "code": 201,
-            "message": "Your box has been created successfully"
+            "message": "Your box has been deployed successfully"
         }
     ),201
-
-    # creation success will be logged in the activity log
-    log = 'Your box has been created successfully'
-    amqp.channel.basic_publish(exchange=amqp.exchangename, routing_key='acitivty.log',
-    body=log, properties=pika.BasicProperties(delivery_mode=2))
-
 
 @app.route("/search")
 def find_box():
@@ -94,12 +84,6 @@ def find_box():
                     "result": box.json()
                 }
             ),200
-
-            foundbox = box.json()
-            foundboxmessage = 'Box found at latitude {foundbox.box_latitude} and longitude {foundbox.box_latitude}'
-            amqp.channel.basic_publish(exchange=amqp.exchangename, routing_key='acitivty.log',
-            body=foundboxmessage, properties=pika.BasicProperties(delivery_mode=2))
-
         else:
             return jsonify(
                 {

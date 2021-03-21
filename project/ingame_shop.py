@@ -10,6 +10,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
 db = SQLAlchemy(app)
+CORS(app)
 
 
 class Shop(db.Model):
@@ -64,6 +65,7 @@ def create_order():
                 }
                 new_cart.append(new_item)
     return jsonify({
+        "code": 201,
         "data": new_cart
     })
 

@@ -10,11 +10,28 @@
       
       <body>
         <!-- TEMP STORAGE FOR USER-->
-        <input type='hidden' id='user' value='Alison'>
+        <input type='hidden' id='user' value='Meghan'>
 
         <script
           src="https://www.paypal.com/sdk/js?client-id=AXQ-k9ZAyp92h07O6IrB-xvUbZW07AS0fwbH-0m2RIlAAFuKg20Wwrfkwv8iRvFCWgcBkLr-HYJnZDMH&currency=SGD"> // Required. Replace YOUR_CLIENT_ID with your sandbox client ID.
         </script>
+
+        <nav class="navbar navbar-expand-lg sticky-top navbar-light bg-light ">
+          <a class="navbar-brand" href="#">GeoHunt</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+              <a class="nav-item nav-link" href="dashboard.html">Home</a>
+              <a class="nav-item nav-link" href="order.html">Rewards Shop</a>
+              <a class="nav-item nav-link" href="#">Box Hunt</a>
+              <a class="nav-item nav-link" href="leaderboard.html">Leaderboards</a>
+              <a id="paying" class="nav-item nav-link active" href="payment.html">Buy Membership</a>
+            </div>
+          </div>
+        </nav>
+
         <div class="container">
           <h1 style='text-align:center;'>GeoTreasure Membership Purchase</h1>
           <br> <br>
@@ -63,22 +80,23 @@
                           body: jsonSuccess
                         });
                         if (!response.ok) {
-                            console.log("Error when returning")
+                            //console.log("Error when returning.")
+                            window.location.replace("error.html");
                         }
                         else {
                           const data = await response.json();
-                          console.log(data);
+                          //console.log(data);
+                          if (data.code == 200) {
+                            window.location.replace("success.html");
+                          }
+                          else {
+                            window.location.replace("error.html");
+                          }
                         }
-                        // .then(response => console.log(await response.json())
-                        // )
-                        // .then(data => {
-                        //   console.log(data);
-                        // });
-
-                        //window.location.replace("success.html");
                     }
                     catch (error) {
-                      console.log("walao error");
+                      //console.log("walao error");
+                      window.location.replace("error.html");
                     }
                     
                   }
