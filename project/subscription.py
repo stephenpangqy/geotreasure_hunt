@@ -8,6 +8,8 @@ from flask_cors import CORS
 import os, sys
 from invokes import invoke_http
 import json
+import amqp_setup
+import pika
 
 app = Flask(__name__)
 CORS(app)
@@ -29,13 +31,21 @@ def updateMembership():
         }
         print("--------Invoking User microservice to update membership---------")
         member_update = invoke_http('http://localhost:5004/user/membership/'+username,'PUT',json)
+        message = member_update['message']
         if member_update['code'] == 200:
+            # message = member_update['message']
+            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+            body=message, properties=pika.BasicProperties(delivery_mode = 2))
             return jsonify({
                 "code":200,
                 "message": member_update['message'],
                 "data": member_update['data']
             }), 200
+            
         else:
+            # message = member_update['message']
+            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+            body=message, properties=pika.BasicProperties(delivery_mode = 2))
             return jsonify({
                 "code": member_update['code'],
                 "message": "An error occurred: " + member_update['message']

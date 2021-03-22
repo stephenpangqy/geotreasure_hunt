@@ -30,16 +30,22 @@ def OpenNearbyBox():
             print("---------Invoking Box microservice to get nearest box-----------")
             print(box)
             if box['code'] == 200:
+                foundmessage = box['message']
                 box_info = box['result']
+                # found box activity sent to amqp
+                amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box_opening.activity',
+                body=foundmessage, properties=pika.BasicProperties(delivery_mode=2))
+                
                 if username == box_info['planted_by_username']:
+                    openyourownboxmessage = 'Box found but cannot be open as it is a self-planted box.'
+                    amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box_opening.activity',
+                    body=openyourownboxmessage, properties=pika.BasicProperties(delivery_mode=2))
+
                     return jsonify({
                         "code":403,
                         "message": "You found your box! Unfortunately, you cant open your own box."
                     }),403
-                    openyourownboxmessage = 'Box found but cannot be open as it is a self-planted box.'
-
-                    amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box_opening.log',
-                    body=openyourownboxmessage, properties=pika.BasicProperties(delivery_mode=2))
+                    
 
                 else:
                     box_id = box_info['boxid']
@@ -48,9 +54,15 @@ def OpenNearbyBox():
                     print(update_box_open)
                     if update_box_open['code'] == 200:
                         update_user = updateUser(box_info,username)
+                        open_message = update_box_open['message']
+                        amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box_opening.activity',
+                        body=open_message, properties=pika.BasicProperties(delivery_mode=2))
                         print("----------Invoking User microservice to update user's balance and inventory-------------")
                         print(update_user)
                         if update_user['code'] == 201:
+                            updatecontentandpoints = 'Successful update of new content and points for {points}'
+                            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="box_opening.activity", 
+                            body=updatecontentandpoints, properties=pika.BasicProperties(delivery_mode = 2)) 
                             return jsonify({
                                 "code":200,
                                 "rewards": {
@@ -61,18 +73,20 @@ def OpenNearbyBox():
 
 
             elif box['code'] == 404:
+                noboxnearby = box['message']
+                amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="box_opening.activity", 
+                body=noboxnearby, properties=pika.BasicProperties(delivery_mode = 2)) 
                 return jsonify({
                     "code":404,
                     "message": "There are no nearby boxes for you to open."
                 }),404
 
-                noboxmessage = 'No boxes nearby to open.'
-                amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='acitivty.log',
-                body=noboxmessage, properties=pika.BasicProperties(delivery_mode=2))
-
-
 
     except Exception as e:
+        errorfinding = "box_opening.py encountered an internal error: " + str(e)
+        amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="box_opening.error", 
+        body=errorfinding, properties=pika.BasicProperties(delivery_mode = 2)) 
+
         return jsonify({
             "code":500,
             "message":"box_opening.py encountered an internal error: " + str(e)

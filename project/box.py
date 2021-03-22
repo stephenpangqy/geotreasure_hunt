@@ -48,26 +48,33 @@ def create_box():
     prize_list = ['$5 GrabVoucher','$10 GrabVoucher','20% OFF Popular Voucher','1-for-1 LiHo Tea Voucher','1-for-1 Gong Cha']
     box_prizes = []
 
-    #i think need i++  - ys
     for i in range(0,no_of_prize):
         index = random.randint(0,len(prize_list)-1)
         box_prizes.append(prize_list[index])
+
     box_prizes_string = ','.join(box_prizes)
     box = Box(box_contents=box_prizes_string,no_of_points=no_of_points,box_latitude=latitude,box_longitude=longitude,planted_by_username=plant_username,is_opened = 'N')
 
     try:
         db.session.add(box)
         db.session.commit()
+
     except Exception as e:
+        boxcreationerror = 'An error occurred while creating the box' + str(e)
+        amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.error',
+        body=boxcreationerror, properties=pika.BasicProperties(delivery_mode=2))
         return jsonify(
             {
                 "code": 500,
-                "message": "An error occurred while creating the order. " + str(e)
+                "message": "An error occurred while creating the box. " + str(e)
             }
         ),500
     
     # return amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="activity.info", 
     #         body=message)
+    boxcreationmessage = 'Your box has been created successfully'
+    amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.activity',
+    body=boxcreationmessage, properties=pika.BasicProperties(delivery_mode=2))
     return jsonify(
         {
             "code": 201,
@@ -76,9 +83,7 @@ def create_box():
     ),201
 
     # creation success will be logged in the activity log
-    boxcreationmessage = 'Your box has been created successfully'
-    amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.log',
-    body=boxcreationmessage, properties=pika.BasicProperties(delivery_mode=2))
+    
 
 
 @app.route("/search")
@@ -90,19 +95,20 @@ def find_box():
     box = Box.query.filter(Box.box_latitude.like(latitude[0:5] + "%"),Box.box_longitude.like(longitude[0:5] + "%"),Box.is_opened.like("N")).first()
     try:
         if box != None:
+            # foundboxmessage = 'Box found at latitude {latitude} and longitude {longitude}'
+            # amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.activity',
+            # body=foundboxmessage, properties=pika.BasicProperties(delivery_mode=2))
             return jsonify(
                 {
                     "code": 200,
-                    "result": box.json()
+                    "result": box.json(),
+                    "message": 'Box found at latitude {latitude} and longitude {longitude}'
                 }
             ),200
 
-            foundbox = box.json()
-            foundboxmessage = 'Box found at latitude {foundbox.box_latitude} and longitude {foundbox.box_latitude}'
-            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.log',
-            body=foundboxmessage, properties=pika.BasicProperties(delivery_mode=2))
-
+            
         else:
+            # foundboxfail = 'No box nearby' for amqp
             return jsonify(
                 {
                     "code": 404,
@@ -126,24 +132,26 @@ def openBox():
         box_details = Box.query.filter_by(boxid=boxid).first()
         box_details.is_opened = 'Y'
         db.session.commit()
+        # openboxmessage = 'Box with {boxid} is opened successfully.'
+        # amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.log',
+        # body=openboxmessage, properties=pika.BasicProperties(delivery_mode=2))
         return jsonify({
             "code": 200,
             "message": "Box status updated to open successfully."
         }),200
 
-        openboxmessage = 'Box with {boxid} is opened successfully.'
-        amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.log',
-        body=openboxmessage, properties=pika.BasicProperties(delivery_mode=2))
+        
 
     except Exception as e:
+        # failopenboxmessage = 'Error occurred while opening Box with {boxid}.'
+        # amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.log',
+        # body=failopenboxmessage, properties=pika.BasicProperties(delivery_mode=2))
+
         return jsonify({
             "code":500,
             "message":"An error occurred while updating box status: " + str(e)
         }),500
-        failopenboxmessage = 'Error occurred while opening Box with {boxid}.'
-        amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.log',
-        body=failopenboxmessage, properties=pika.BasicProperties(delivery_mode=2))
-
+        
 
 
 

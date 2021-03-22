@@ -29,13 +29,19 @@ def take_order():
         print(data)
         print('\n-----Invoking in-game shop microservice-----')
         get_item = invoke_http(in_game_URL + "order", method='POST',json = data)
+        # i need amqp here after ingameshop function change to add calculations
+
         print(get_item)
-        if get_item['code'] == 500:
+        if get_item['code'] == 500: # is this mean order creation fail?? becuz not enuf points
             return jsonify(get_item)
-        else:
+
+        else: # and then this is order creation success?
             print('\n-----Invoking user microservice-----')
             user_update = invoke_http(user_URL + "user/purchase/" + name, method='PUT',json = get_item)
-            
+            # i think here also need add core for different situations
+            # actually nvm the amqp generated in the userpy functions already
+            # i dont need here else duplicate
+
             return jsonify(user_update)
 
 

@@ -28,7 +28,7 @@ channel.queue_bind(exchange=exchangename, queue=queue_name, routing_key='*.error
 # ------------      Activity log Queue     ------------ #
 queue_name = 'Activity_log'
 channel.queue_declare(queue=queue_name, durable=True)
-channel.queue_bind(exchange=exchangename, queue=queue_name, routing_key='*.log')
+channel.queue_bind(exchange=exchangename, queue=queue_name, routing_key='*.activity')
 
 # ------------ Re-establish Connection ------------- #
 def check_setup():

@@ -189,9 +189,10 @@ def updatemembership(username):
             #check if user is existing member or not
             if usermembership.is_member != "Y":
                 #update the membership record
-                membershipok = 'Member has been successfully applied for user {usermembership}'
-                amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
-                body=membershipok, properties=pika.BasicProperties(delivery_mode = 2)) 
+                # amqp on subscription
+                # membershipok = 'Member has been successfully applied for user {usermembership}'
+                # amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+                # body=membershipok, properties=pika.BasicProperties(delivery_mode = 2)) 
                 usermembership.is_member = "Y"
                 usermembership.membership_date = data['membership-date']
                 db.session.commit()
@@ -299,9 +300,9 @@ def openbox(username):
             db.session.commit()
 
             #return success for both content and points updated
-            updatecontentandpoints = 'Successful update of new content and points for {points}'
-            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
-            body=updatecontentandpoints, properties=pika.BasicProperties(delivery_mode = 2)) 
+            # updatecontentandpoints = 'Successful update of new content and points for {points}'
+            # amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+            # body=updatecontentandpoints, properties=pika.BasicProperties(delivery_mode = 2)) 
             return jsonify(
                 {
                     "code":201,
@@ -412,6 +413,9 @@ def purchase(username):
                     "message": "Purchase is successful. Your items have been added to your inventory."
                 }),201
 
+            # i dont think this part should have as before this purchase step
+            # is the order creation and before that is checking whether got sufficient currency 
+            # which should be implemented in another function (which have already, check_balance() )
             else:
                 insufficientpoints = 'User {user} do not have enough points to purchase everything in the cart'
                 amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.error", 
