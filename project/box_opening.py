@@ -7,6 +7,8 @@ from flask_cors import CORS
 import os, sys
 from invokes import invoke_http
 import json
+import amqp_setup
+import pika
 
 app = Flask(__name__)
 CORS(app)
@@ -34,6 +36,11 @@ def OpenNearbyBox():
                         "code":403,
                         "message": "You found your box! Unfortunately, you cant open your own box."
                     }),403
+                    openyourownboxmessage = 'Box found but cannot be open as it is a self-planted box.'
+
+                    amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box_opening.log',
+                    body=openyourownboxmessage, properties=pika.BasicProperties(delivery_mode=2))
+
                 else:
                     box_id = box_info['boxid']
                     update_box_open = invoke_http('http://localhost:5002/open','PUT',{'boxid':box_id})
@@ -58,6 +65,10 @@ def OpenNearbyBox():
                     "code":404,
                     "message": "There are no nearby boxes for you to open."
                 }),404
+
+                noboxmessage = 'No boxes nearby to open.'
+                amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='acitivty.log',
+                body=noboxmessage, properties=pika.BasicProperties(delivery_mode=2))
 
 
 

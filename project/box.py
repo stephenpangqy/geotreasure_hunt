@@ -4,6 +4,11 @@ from flask_cors import CORS
 from invokes import invoke_http
 import requests
 import random
+<<<<<<< Updated upstream
+=======
+import amqp_setup
+import pika
+>>>>>>> Stashed changes
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/box'
@@ -62,6 +67,11 @@ def create_box():
             }
         ),500
     
+<<<<<<< Updated upstream
+=======
+    # return amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="activity.info", 
+    #         body=message)
+>>>>>>> Stashed changes
     return jsonify(
         {
             "code": 201,
@@ -69,6 +79,15 @@ def create_box():
         }
     ),201
 
+<<<<<<< Updated upstream
+=======
+    # creation success will be logged in the activity log
+    boxcreationmessage = 'Your box has been created successfully'
+    amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.log',
+    body=boxcreationmessage, properties=pika.BasicProperties(delivery_mode=2))
+
+
+>>>>>>> Stashed changes
 @app.route("/search")
 def find_box():
     query_params = request.args
@@ -83,7 +102,17 @@ def find_box():
                     "code": 200,
                     "result": box.json()
                 }
+<<<<<<< Updated upstream
             ),200
+=======
+            ),200,
+
+            foundbox = box.json()
+            foundboxmessage = 'Box found at latitude {foundbox.box_latitude} and longitude {foundbox.box_latitude}'
+            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.log',
+            body=foundboxmessage, properties=pika.BasicProperties(delivery_mode=2))
+
+>>>>>>> Stashed changes
         else:
             return jsonify(
                 {
@@ -112,11 +141,19 @@ def openBox():
             "code": 200,
             "message": "Box status updated to open successfully."
         }),200
+
+        openboxmessage = 'Box with {boxid} is opened successfully.'
+        amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.log',
+        body=openboxmessage, properties=pika.BasicProperties(delivery_mode=2))
+
     except Exception as e:
         return jsonify({
             "code":500,
             "message":"An error occurred while updating box status: " + str(e)
         }),500
+        failopenboxmessage = 'Error occurred while opening Box with {boxid}.'
+        amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.log',
+        body=failopenboxmessage, properties=pika.BasicProperties(delivery_mode=2))
 
 
 
