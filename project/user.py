@@ -4,6 +4,8 @@ from os import environ
 import requests
 from datetime import datetime
 from flask_cors import CORS
+import amqp_setup
+import pika
 
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm 
@@ -105,6 +107,9 @@ def get_user(username):
             "user": user.json()
         }),200
     else:
+        usernotfoundmessage = 'user not found'
+        # amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+        # body=usernotfoundmessage, properties=pika.BasicProperties(delivery_mode = 2))
         return jsonify({
             "code":404,
             "user": "Not found."
@@ -145,6 +150,7 @@ def leaderboard():
         }
     ), 404
 
+# redundant, may remove - ys
 @app.route("/user/balance/<string:username>")
 def checkbalance(username):
     #get the user record
@@ -152,6 +158,7 @@ def checkbalance(username):
     #check if user record is found
     if checkb:
         # if record found return the balance
+
         return jsonify(
             {
                 "code": 200,
@@ -182,6 +189,9 @@ def updatemembership(username):
             #check if user is existing member or not
             if usermembership.is_member != "Y":
                 #update the membership record
+                membershipok = 'Member has been successfully applied for user {usermembership}'
+                amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+                body=membershipok, properties=pika.BasicProperties(delivery_mode = 2)) 
                 usermembership.is_member = "Y"
                 usermembership.membership_date = data['membership-date']
                 db.session.commit()
@@ -193,31 +203,43 @@ def updatemembership(username):
                     }
                 ),200
             #return error for existing membership
+            else:
+                membershipexist = 'User {usermembership} already subscribed'
+                amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.error", 
+                body=membershipexist, properties=pika.BasicProperties(delivery_mode = 2))
+                return jsonify(
+                    {
+                        "code": 500,
+                        "data": usermembership.json(),
+                        "message": "user is a existing subscribed member"
+                    }
+                ),500
+        
+        else:
+            nouser = 'when trying to subscribe, Usernames do NOT match'
+            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.error", 
+                body=nouser, properties=pika.BasicProperties(delivery_mode = 2))
             return jsonify(
                 {
-                    "code": 500,
-                    "data": usermembership.json(),
-                    "message": "user is a existing subscribed member"
+                    "code": 403,
+                    "message": "Usernames do NOT match!"
                 }
-            ),500
-        
+            ),403
+
+    else:
+        #return error for user not found
+        usernotfound = 'username not found'
+        amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.error", 
+                body=usernotfound, properties=pika.BasicProperties(delivery_mode = 2))
         return jsonify(
             {
-                "code": 403,
-                "message": "Usernames do NOT match!"
+                "code": 404,
+                "data": {
+                    "username": username
+                },
+                "message": "username not found"
             }
-        ),403
-
-    #return error for user not found
-    return jsonify(
-        {
-            "code": 404,
-            "data": {
-                "username": username
-            },
-            "message": "username not found"
-        }
-    ), 404
+        ), 404
 
 @app.route("/user/openbox/<string:username>", methods=['PUT'])
 def openbox(username):
@@ -241,7 +263,11 @@ def openbox(username):
             #double check it sync with db again
             if itemname == content.itemname:
                 #update quantity
+                updatequantity = 'user {points} content updated'
+                amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+                body=updatequantity, properties=pika.BasicProperties(delivery_mode = 2))
                 content.quantity += 1
+
         elif content != "" and itemname != None:
             #print("hello")
             #if no record found need to create one
@@ -252,43 +278,56 @@ def openbox(username):
                 db.session.commit()
             except Exception as e:
                 # return error when fail to insert
+                failtoinsert = 'An error occurred when updating {points} inventory' + str(e)
+                amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.error", 
+                body=failtoinsert, properties=pika.BasicProperties(delivery_mode = 2)) 
                 return jsonify(
                     {
                         "code":500,
                         "message": "an error occurred updating user inventory" + str(e)
                     }
                 ), 500
-        #update user point in user db
-        #check if requested user is sync with db user
-        #update points of the user
-        points.total_points += data['no_of_points']
-        points.current_points += data['no_of_points']
-        #update user number of boxes open
-        points.boxes_open += 1
-        db.session.commit()
 
-        #return success for both content and points updated
+        else:
+            #update user point in user db
+            #check if requested user is sync with db user
+            #update points of the user
+            points.total_points += data['no_of_points']
+            points.current_points += data['no_of_points']
+            #update user number of boxes open
+            points.boxes_open += 1
+            db.session.commit()
+
+            #return success for both content and points updated
+            updatecontentandpoints = 'Successful update of new content and points for {points}'
+            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+            body=updatecontentandpoints, properties=pika.BasicProperties(delivery_mode = 2)) 
+            return jsonify(
+                {
+                    "code":201,
+                    "data":{
+                        "item_won": itemname,
+                        "points_earned": data['no_of_points']
+                    }
+                }
+            ),201
+
+    else:
+        #return error when username not found
+        usernotfound = 'User not found when opening box and updating contents or points'
+        amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.error", 
+            body=usernotfound, properties=pika.BasicProperties(delivery_mode = 2)) 
         return jsonify(
             {
-                "code":201,
-                "data":{
-                    "item_won": itemname,
-                    "points_earned": data['no_of_points']
-                }
+            "code": 404,
+            "data": {
+                    "username": username
+                },
+            "message": "user not found"
             }
-        ),201
-    #return error when username not found
-    return jsonify(
-        {
-        "code": 404,
-        "data": {
-                "username": username
-            },
-        "message": "user not found"
-        }
-    ),404
+        ),404
 
-
+# for purchase incentives, not membership
 @app.route("/user/purchase/<string:username>", methods=['PUT'])
 def purchase(username):
     # DATA PASSED THROUGH { data: [ {itemname,price,quantity}, {itemname,price,quantity}, ...] }
@@ -310,9 +349,15 @@ def purchase(username):
             if user_balance >= subtotal:
                 # Updating user's balance
                 try:
+                    balanceupdated = 'User {user} balance is updated.'
+                    amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+                    body=balanceupdated, properties=pika.BasicProperties(delivery_mode = 2)) 
                     user.current_points -= subtotal
                     db.session.commit()
                 except Exception as e:
+                    balancenotupdated = 'An error occurred when trying to update user balance' + str(e)
+                    amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.error", 
+                    body=balancenotupdated, properties=pika.BasicProperties(delivery_mode = 2)) 
                     return jsonify({
                         "code": 500,
                         "message": "An error occurred when trying to update user balance: " + str(e)
@@ -324,10 +369,16 @@ def purchase(username):
                     if content == None:
                         createcontent = user_inventory(username, item_dict['itemname'], int(item_dict['quantity']))
                         try:
+                            contentcreated = 'content {createcontent} created for user {user}'
+                            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+                            body=contentcreated, properties=pika.BasicProperties(delivery_mode = 2)) 
                             db.session.add(createcontent)
                             db.session.commit()
                             del createcontent
                         except Exception as e:
+                            contentupdateerror = 'An error occurred when updating user inventory of new content'
+                            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.error", 
+                            body=contentupdateerror, properties=pika.BasicProperties(delivery_mode = 2)) 
                             # return error when fail to insert
                             return jsonify(
                                 {
@@ -338,8 +389,14 @@ def purchase(username):
                     else:
                         content.quantity += int(item_dict['quantity'])
                         try:
+                            contentquantityupdate = 'Content quantity for user {user} updated'
+                            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+                            body=contentquantityupdate, properties=pika.BasicProperties(delivery_mode = 2)) 
                             db.session.commit()
                         except Exception as e:
+                            contentquantityupdateerror = 'An error occurred when updating user inventory of content quantity'
+                            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.error", 
+                            body=contentquantityupdateerror, properties=pika.BasicProperties(delivery_mode = 2)) 
                             # return error when fail to insert
                             return jsonify(
                                 {
@@ -347,16 +404,22 @@ def purchase(username):
                                     "message": "an error occurred updating user inventory" + str(e)
                                 }
                             ), 500
+                purchasesuccess = 'Purchase for user {user} is successful. Items added to inventory.'
+                amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+                body=purchasesuccess, properties=pika.BasicProperties(delivery_mode = 2)) 
                 return jsonify({
                     "code":201,
                     "message": "Purchase is successful. Your items have been added to your inventory."
                 }),201
 
-
-            return jsonify({
-                "code": 500,
-                "message": "You do not have enough points to purchase everything in your cart!"
-            })
+            else:
+                insufficientpoints = 'User {user} do not have enough points to purchase everything in the cart'
+                amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.error", 
+                body=insufficientpoints, properties=pika.BasicProperties(delivery_mode = 2)) 
+                return jsonify({
+                    "code": 500,
+                    "message": "You do not have enough points to purchase everything in your cart!"
+                })
         
         return jsonify({
             "code": 404,

@@ -66,7 +66,9 @@ def create_order():
                 new_cart.append(new_item)
     return jsonify({
         "code": 201,
-        "data": new_cart
+        "data": new_cart,
+        # for amqp logging
+        "message": "Successful order purchase"
     })
 
 if __name__ == '__main__':

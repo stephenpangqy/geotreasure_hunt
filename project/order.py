@@ -21,18 +21,19 @@ name = 'Christine'
 
 @app.route('/order',methods = ['POST'])
 def take_order():
-   # FIX THIS
-   # JSON TAKEN IN: { data: [ {name, qty}, {item, qty}, ... ]}
-   if request.method == 'POST':
-       # This depends on the form submission format
-       data = request.get_json()
-       print(data)
-       print('\n-----Invoking in-game shop microservice-----')
-       get_item = invoke_http(in_game_URL + "order", method='POST',json = data)
-       print(get_item)
-       if get_item['code'] == 500:
+    # FIX THIS
+    # JSON TAKEN IN: { data: [ {name, qty}, {item, qty}, ... ]}
+    if request.method == 'POST':
+        # This depends on the form submission format
+        data = request.get_json()
+        print(data)
+        print('\n-----Invoking in-game shop microservice-----')
+        get_item = invoke_http(in_game_URL + "order", method='POST',json = data)
+        print(get_item)
+        if get_item['code'] == 500:
+            noorder = 'No order request made or unsuccessful request'
             return jsonify(get_item)
-       else:
+        else:
             print('\n-----Invoking user microservice-----')
             user_update = invoke_http(user_URL + "user/purchase/" + name, method='PUT',json = get_item)
             
