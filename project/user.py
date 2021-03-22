@@ -150,7 +150,6 @@ def leaderboard():
         }
     ), 404
 
-# redundant, may remove - ys
 @app.route("/user/balance/<string:username>")
 def checkbalance(username):
     #get the user record

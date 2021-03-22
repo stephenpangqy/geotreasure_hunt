@@ -41,6 +41,7 @@ def take_order():
             # i think here also need add core for different situations
             # actually nvm the amqp generated in the userpy functions already
             # i dont need here else duplicate
+            # see how
 
             return jsonify(user_update)
 
