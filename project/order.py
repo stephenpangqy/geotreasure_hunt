@@ -31,7 +31,6 @@ def take_order():
         get_item = invoke_http(in_game_URL + "order", method='POST',json = data)
         print(get_item)
         if get_item['code'] == 500:
-            noorder = 'No order request made or unsuccessful request'
             return jsonify(get_item)
         else:
             print('\n-----Invoking user microservice-----')

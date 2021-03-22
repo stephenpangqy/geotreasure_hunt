@@ -64,6 +64,10 @@ def create_order():
                     "quantity":item_dict["quantity"]
                 }
                 new_cart.append(new_item)
+
+    # add calculation here
+    # if cost >=balance: order proceeds, update user inventory
+    # if cost<balance: return not enuf money, order not proceed
     return jsonify({
         "code": 201,
         "data": new_cart,
