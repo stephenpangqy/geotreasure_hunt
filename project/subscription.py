@@ -34,7 +34,7 @@ def updateMembership():
         message = member_update['message']
         if member_update['code'] == 200:
             # message = member_update['message']
-            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="subscription.activity", 
             body=message, properties=pika.BasicProperties(delivery_mode = 2))
             return jsonify({
                 "code":200,
@@ -44,7 +44,7 @@ def updateMembership():
             
         else:
             # message = member_update['message']
-            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="user.activity", 
+            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="subscription.activity", 
             body=message, properties=pika.BasicProperties(delivery_mode = 2))
             return jsonify({
                 "code": member_update['code'],
