@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Ensures optimal rendering on mobile devices. -->
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" /> <!-- Optimal Internet Explorer compatibility -->
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+      
+      <body>
+        <!-- TEMP STORAGE FOR USER-->
+        <input type='hidden' id='user' value='Michelle'>
+
+        <script
+          src="https://www.paypal.com/sdk/js?client-id=AXQ-k9ZAyp92h07O6IrB-xvUbZW07AS0fwbH-0m2RIlAAFuKg20Wwrfkwv8iRvFCWgcBkLr-HYJnZDMH&currency=SGD"> // Required. Replace YOUR_CLIENT_ID with your sandbox client ID.
+        </script>
+
+        <nav class="navbar navbar-expand-lg sticky-top navbar-light bg-light ">
+          <a class="navbar-brand" href="#">GeoHunt</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+              <a class="nav-item nav-link" href="dashboard.html">Home</a>
+              <a class="nav-item nav-link" href="order.html">Rewards Shop</a>
+              <a class="nav-item nav-link" href="box_hunt.html">Box Hunt</a>
+              <a class="nav-item nav-link" href="leaderboard.html">Leaderboards</a>
+              <a id="paying" class="nav-item nav-link active" href="payment.html">Buy Membership</a>
+            </div>
+          </div>
+        </nav>
+
+        <div class="container">
+          <h1 style='text-align:center;'>GeoTreasure Membership Purchase</h1>
+          <br> <br>
+          <div style='text-align:center;' id="paypal-button-container"></div>
+        </div>
+
+        <script>
+          var PAYPAL_CLIENT = 'AXQ-k9ZAyp92h07O6IrB-xvUbZW07AS0fwbH-0m2RIlAAFuKg20Wwrfkwv8iRvFCWgcBkLr-HYJnZDMH';
+          var PAYPAL_SECRET = 'EE6lGjs5Bp--CO_ogtpiIwKoCa0J7Z680gepVJGVAdpGCjaHTpzvJi7mp7BWr1Ez9UBq9ANUxE1UqRMS';
+
+          var PAYPAL_ORDER_API = 'https://api-m.paypal.com/v2/checkout/orders/';
+
+            paypal.Buttons({
+              createOrder: function(data, actions) {
+                // This function sets up the details of the transaction, including the amount and line item details.
+                return actions.order.create({
+                  purchase_units: [{
+                    description: 'GeoTreasure Membership',
+                    amount: {
+                      value: '0.01' // MUST CHANGE TO PRICE OF MEMBERSHIP
+                    }
+                  }]
+                });
+              },
+              onApprove: function(data, actions) {
+                // This function captures the funds from the transaction.
+                return actions.order.capture().then(function(details) {
+                  // This function shows a transaction success message to your buyer.
+                  alert('Transaction completed by ' + details.payer.name.given_name);
+                  // Send update Data to Subscription microservice
+                  subscription_url = 'http://localhost:5006'
+                  let username = document.getElementById("user").value;
+                  let jsonSuccess = JSON.stringify({
+                      code: 200,
+                      username: username
+                  });
+                  console.log(jsonSuccess);
+
+                  async function send_Request() {
+                    try {
+                        const response = await fetch((subscription_url), 
+                        { method: 'POST',
+                          headers: {
+                                        "Content-type": "application/json"
+                                    },
+                          body: jsonSuccess
+                        });
+                        if (!response.ok) {
+                            //console.log("Error when returning.")
+                            window.location.replace("error.html");
+                        }
+                        else {
+                          const data = await response.json();
+                          //console.log(data);
+                          if (data.code == 200) {
+                            window.location.replace("success.html");
+                          }
+                          else {
+                            window.location.replace("error.html");
+                          }
+                        }
+                    }
+                    catch (error) {
+                      //console.log("walao error");
+                      window.location.replace("error.html");
+                    }
+                    
+                  }
+                  send_Request();
+                });
+                
+              }
+            }).render('#paypal-button-container');
+            //This function displays Smart Payment Buttons on your web page.
+          </script>
+          <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+          <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+          <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+          <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+      </body>
+</html>

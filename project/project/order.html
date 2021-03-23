@@ -1,0 +1,168 @@
+<html>
+   <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Ensures optimal rendering on mobile devices. -->
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" /> <!-- Optimal Internet Explorer compatibility -->
+      <!-- Bootstrap CSS -->
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+      <link rel="stylesheet" href="static/dashboard.css">
+  </head>
+   <body>
+      <!-- TEMP STORAGE FOR USER-->
+      <input type='hidden' id='current' value='Michelle'>
+
+      <nav class="navbar navbar-expand-lg sticky-top navbar-light bg-light ">
+         <a class="navbar-brand" href="#">GeoHunt</a>
+         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+           <span class="navbar-toggler-icon"></span>
+         </button>
+         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+           <div class="navbar-nav">
+             <a class="nav-item nav-link" href="dashboard.html">Home</a>
+             <a class="nav-item nav-link active" href="order.html">Rewards Shop</a>
+             <a class="nav-item nav-link" href="box_hunt.html">Box Hunt</a>
+             <a class="nav-item nav-link" href="leaderboard.html">Leaderboards</a>
+             <a id="paying" class="nav-item nav-link" href="payment.html">Buy Membership</a>
+           </div>
+         </div>
+      </nav>
+
+      <h1>Geo Shop. Buy now!</h1>
+      <div id='notice' style='color:red;'></div>
+      <div id='success' style='color:green;'></div>
+      <form id='form' action = "#" method = "post">
+         <table border='1'>
+            <tr>
+               <th>Item</th>
+               <th>Description</th>
+               <th>Price</th>
+               <th>Quantity</th>
+            </tr>
+            <tbody id='sale_table'></tbody>
+            <tr>
+               <td colspan='3' style='font-weight:bold;'><span id='subtotal'></span></td>
+               <td> <input id='btn' type='submit' value='Purchase' onclick='formSubmit()'> </td>
+            </tr>
+         </table>
+      </form>   
+   </body>
+   <script>
+      var item_list = [];
+      async function getItems() {
+         var shop_url = 'http://localhost:5005/getitems';
+         try {
+            const response = 
+               await fetch(
+                  shop_url, {method: 'GET'}
+               );
+            
+               if (!response.ok) {
+                  $('#notice').text("There was an error retrieving shop items");
+               }
+               else {
+                  const shop_items = await response.json();
+                  //console.log(shop_items);
+                  for (i=0; i<shop_items.shop_items.length; i++) {
+                     item_list.push(shop_items.shop_items[i].itemname);
+                     document.getElementById("sale_table").innerHTML += 
+                     `<tr>
+                        <td>`+shop_items.shop_items[i].itemname+`</td>
+                        <td>`+shop_items.shop_items[i].description+`</td>
+                        <td>`+shop_items.shop_items[i].price+`</td>
+                        <td style='text-align:center;'> <select id='`+shop_items.shop_items[i].itemname+`'>
+                              <option value='0'>0</option>
+                              <option value='1'>1</option>
+                              <option value='2'>2</option>
+                              <option value='3'>3</option>
+                              <option value='4'>4</option>
+                              <option value='5'>5</option>
+                             </select>
+                        </td>
+                     </tr>`;
+                  }
+
+               }
+         }
+         catch(error) {
+            $('#notice').text("There was an error retrieving shop items" + error);
+         }
+      };
+      getItems();
+
+      document.getElementById("btn").addEventListener("click", function(event){
+         event.preventDefault()
+      });
+
+      // When form is submitted.
+      function formSubmit() {
+         $('#notice').text("");
+         $('#success').text("")
+         cart_data = {"data": [] }
+         let form = document.getElementById("form").elements;
+         //console.log(form);
+         for (j=0;j<form.length-1;j++) {
+            // console.log(form[j].id)
+            // console.log(form[j].value)
+            if (form[j].value > 0) {
+               let chosen_item = form[j].id;
+               let qty = form[j].value;
+               cart_data['data'].push({ "item" : chosen_item, "quantity": qty });
+            }
+         }
+         console.log(cart_data);
+         if (cart_data['data'] == []) {
+            $('#notice').text("Your cart is empty!")
+         }
+         else {
+            order_url = 'http://localhost:5007/order';
+            cart_json = JSON.stringify(cart_data);
+            async function send_order() {
+               try {
+                  const response = await fetch(
+                     (order_url),
+                     {
+                        method: 'POST',
+                        headers: {
+                           "Content-type": "application/json"
+                        },
+                        body: cart_json
+                     }
+                  );
+
+                  if (!response.ok) {
+                     $('#notice').text("An error occurred while processing your purchase.")
+                  }
+                  else {
+                     const data = await response.json();
+                     console.log(data);
+                     if (data.code == 201) {
+                        $('#success').text("Your purchase has been successful. Your items have been added to your inventory.")
+                     }
+                     else if (data.code == 500) {
+                        $('#notice').text("You do not have enough points purchase. Remove some items from your cart!")
+                     }
+                     else if (data.code == 404) {
+                        $('#notice').text("Your cart is empty!")
+                     }
+
+                  }
+               }
+               catch (error) {
+                  $('#notice').text("An error occurred: " + error)
+               }
+            }
+            send_order();
+
+         }
+         
+
+
+
+      }
+      
+   </script>
+   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+</html>
