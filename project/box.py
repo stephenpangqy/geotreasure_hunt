@@ -6,6 +6,7 @@ import requests
 import random
 import amqp_setup
 import pika
+import json
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/box'
@@ -13,6 +14,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
 db = SQLAlchemy(app)
+CORS(app)
 
 
 class Box(db.Model):
@@ -36,6 +38,35 @@ class Box(db.Model):
             'planted_by_username': self.planted_by_username,
             'is_opened': self.is_opened
         }
+
+# Obtains a list of Boxes that are Unopened to display on the map
+@app.route("/getBoxes")
+def getBoxes():
+    try:
+        boxes = Box.query.filter_by(is_opened='N')
+        if not boxes:
+            return jsonify({
+                "code": 404,
+                "message": "There are no boxes on the map at all!"
+            }),404
+        box_array = []
+        for box in boxes:
+            box_array.append(box.json())
+        
+        return jsonify({
+            "code": 200,
+            "boxes": box_array
+        }), 200
+    
+    except Exception as e:
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while retrieving boxes: " + str(e)
+        })
+    
+    
+
+
 @app.route("/", methods=["POST"])
 def create_box():
     # Format should be { username , latitude, longitude }
@@ -47,44 +78,29 @@ def create_box():
     no_of_prize = random.randint(0,1)
     prize_list = ['$5 GrabVoucher','$10 GrabVoucher','20% OFF Popular Voucher','1-for-1 LiHo Tea Voucher','1-for-1 Gong Cha']
     box_prizes = []
-
     for i in range(0,no_of_prize):
         index = random.randint(0,len(prize_list)-1)
         box_prizes.append(prize_list[index])
-
     box_prizes_string = ','.join(box_prizes)
     box = Box(box_contents=box_prizes_string,no_of_points=no_of_points,box_latitude=latitude,box_longitude=longitude,planted_by_username=plant_username,is_opened = 'N')
 
     try:
         db.session.add(box)
         db.session.commit()
-
     except Exception as e:
-        boxcreationerror = 'An error occurred while creating the box' + str(e)
-        amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.error',
-        body=boxcreationerror, properties=pika.BasicProperties(delivery_mode=2))
         return jsonify(
             {
                 "code": 500,
-                "message": "An error occurred while creating the box. " + str(e)
+                "message": "An error occurred while creating the order. " + str(e)
             }
         ),500
     
-    # return amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="activity.info", 
-    #         body=message)
-    boxcreationmessage = 'Your box has been created successfully'
-    amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.activity',
-    body=boxcreationmessage, properties=pika.BasicProperties(delivery_mode=2))
     return jsonify(
         {
             "code": 201,
             "message": "Your box has been deployed successfully"
         }
     ),201
-
-    # creation success will be logged in the activity log
-    
-
 
 @app.route("/search")
 def find_box():
@@ -95,20 +111,13 @@ def find_box():
     box = Box.query.filter(Box.box_latitude.like(latitude[0:5] + "%"),Box.box_longitude.like(longitude[0:5] + "%"),Box.is_opened.like("N")).first()
     try:
         if box != None:
-            # foundboxmessage = 'Box found at latitude {latitude} and longitude {longitude}'
-            # amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.activity',
-            # body=foundboxmessage, properties=pika.BasicProperties(delivery_mode=2))
             return jsonify(
                 {
                     "code": 200,
-                    "result": box.json(),
-                    "message": 'Box found at latitude {latitude} and longitude {longitude}'
+                    "result": box.json()
                 }
             ),200
-
-            
         else:
-            # foundboxfail = 'No box nearby' for amqp
             return jsonify(
                 {
                     "code": 404,
@@ -132,26 +141,16 @@ def openBox():
         box_details = Box.query.filter_by(boxid=boxid).first()
         box_details.is_opened = 'Y'
         db.session.commit()
-        # openboxmessage = 'Box with {boxid} is opened successfully.'
-        # amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.log',
-        # body=openboxmessage, properties=pika.BasicProperties(delivery_mode=2))
         return jsonify({
             "code": 200,
             "message": "Box status updated to open successfully."
         }),200
-
-        
-
     except Exception as e:
-        # failopenboxmessage = 'Error occurred while opening Box with {boxid}.'
-        # amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box.log',
-        # body=failopenboxmessage, properties=pika.BasicProperties(delivery_mode=2))
-
         return jsonify({
             "code":500,
             "message":"An error occurred while updating box status: " + str(e)
         }),500
-        
+
 
 
 

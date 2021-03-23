@@ -5,83 +5,55 @@ from flask_cors import CORS
 
 import requests
 import json
+import amqp_setup
+import pika
 app = Flask(__name__)
 CORS(app)
 
 
 user_URL = "http://localhost:5004/"
 in_game_URL = "http://localhost:5005/"
-activity_URL = "http://localhost:5672"
-error_URL = "http://localhost:5672/"
 
-name = 'Christine'
-
-
-
+# NEED TO FIND A WAY TO PASS THIS DATA
+name = 'Michelle'
 
 @app.route('/order',methods = ['POST'])
 def take_order():
-    # FIX THIS
-    # JSON TAKEN IN: { data: [ {name, qty}, {item, qty}, ... ]}
-    if request.method == 'POST':
-        # This depends on the form submission format
-        data = request.get_json()
-        print(data)
-        print('\n-----Invoking in-game shop microservice-----')
-        get_item = invoke_http(in_game_URL + "order", method='POST',json = data)
-        # i need amqp here after ingameshop function change to add calculations
-
-        print(get_item)
-        if get_item['code'] == 500: # is this mean order creation fail?? becuz not enuf points
+   # JSON TAKEN IN: { data: [ {name, qty}, {item, qty}, ... ]}
+   message = {
+       "user": name,
+       "action": "Purchase from Shop"
+   }
+   if request.method == 'POST':
+       # This depends on the form submission format
+       data = request.get_json()
+       print(data)
+       print('\n-----Invoking in-game shop microservice-----')
+       get_item = invoke_http(in_game_URL + "order", method='POST',json = data)
+       print(get_item)
+       if get_item['code'] == 500:
+            message['error'] = "An error occurred while purchasing"
             return jsonify(get_item)
-
-        else: # and then this is order creation success?
+       else:
             print('\n-----Invoking user microservice-----')
             user_update = invoke_http(user_URL + "user/purchase/" + name, method='PUT',json = get_item)
-            # i think here also need add core for different situations
-            # actually nvm the amqp generated in the userpy functions already
-            # i dont need here else duplicate
-            # see how
-
+            # If got Error
+            if user_update['code'] not in range(200,300):
+                message['error'] = user_update['message']
+                amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='order.error',
+                body=json.dumps(message), properties=pika.BasicProperties(delivery_mode = 2 ))
+            # If got no error
+            else:
+                message['success'] = "Purchase successful"
+                message['currencyUsed'] = user_update['currencyUsed']
+                message['items_received'] = user_update['items_received']
+                amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='order.activity',
+                body=json.dumps(message), properties=pika.BasicProperties(delivery_mode = 2 ))
+                
+            
             return jsonify(user_update)
 
 
-
-#user_balance = invoke_http(user_URL + "user/balance/" + name , method='GET')
-#print('order_result:', user_balance)
-#user_update = invoke_http(user_URL + "user/purchase/" + name, methods='PUT')      
-
-
-#def get_order(data):
-    #try:
-       # a_json = json.loads(data)
-        #return print("String  converted to JSON")
-    #except:
-         #return print("String could not be converted to JSON")
-    #if data.is_json:
-        #try:
-            #order = request.get_json()
-            #print("\nReceived an order in JSON:", order)
-            #result = processOrder(order)
-            #return jsonify(result), 200
-        #except Exception as e:
-            #pass  # do nothing.
-
-    #if reached here, not a JSON request.
-    #return jsonify({
-        #"code": 400,
-        #"message": "Invalid JSON input: " + str(request.get_data())
-    #}), 400
-
-
-
-#def processOrder(order):
-    # 1. get the balance of the user
-    #print('\n-----Invoking user microservice-----')
-    #username = users.username
-    #user_balance = invoke_http(user_URL + "user/balance/" + name , method='GET')
-    #print('order_result:', user_balance)
-    #user_update = invoke_http(user_URL + "user/purchase/" + name, methods='PUT')
 
 
 if __name__ == '__main__':

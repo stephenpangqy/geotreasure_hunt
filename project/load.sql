@@ -81,12 +81,11 @@ CREATE TABLE activitylog (
   activityID int not null auto_increment primary key,
   activityType varchar(300) NOT NULL,
   activityDatetime datetime NOT NULL,
-  userID_Involved int,
-  boxID_Involved int,
-  incentivePurchased varchar(300),
+  activityDesc varchar(400),
+  user_Involved varchar(300),
+  ItemsReceived varchar(400),
   currencyGained int,
-  currencyUsed int,
-  errorID int
+  currencyUsed int
 );
 
 drop database if exists ErrorLog;
@@ -95,8 +94,8 @@ use ErrorLog;
 
 CREATE TABLE if not exists errorlog (
   errorID int not null auto_increment primary key,
+  user_Involved varchar(300) NOT NULL,
   errorType varchar(300) NOT NULL,
-  errorDescription varchar(300) NOT NULL,
-  errorDatetime datetime NOT NULL,
-  userID_Involved int NOT NULL
+  errorDescription varchar(400) NOT NULL,
+  errorDatetime datetime NOT NULL
 );

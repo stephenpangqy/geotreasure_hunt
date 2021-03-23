@@ -6,7 +6,7 @@ port = 5672
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(
         host=hostname, port=port,
-        heartbeat=600, blocked_connection_timeout=300
+        heartbeat=3600, blocked_connection_timeout=3600
     )
 )
 

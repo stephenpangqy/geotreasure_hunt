@@ -1,4 +1,3 @@
-from flask import Flask, render_template, jsonify
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from os import environ
@@ -25,27 +24,30 @@ def updateMembership():
     username = request.json.get('username')
     if code == 200:
         current_date = datetime.today().strftime('%Y-%m-%d')
-        json = {
+        submit_json = {
             "username": username,
             "membership-date": current_date
         }
         print("--------Invoking User microservice to update membership---------")
-        member_update = invoke_http('http://localhost:5004/user/membership/'+username,'PUT',json)
-        message = member_update['message']
+        member_update = invoke_http('http://localhost:5004/user/membership/'+username,'PUT',submit_json)
+        amqp_setup.check_setup()
+        message = {
+            "user": username,
+            "action": "Subscription Payment"
+        }
         if member_update['code'] == 200:
-            # message = member_update['message']
+            message['success'] = member_update['message']
             amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="subscription.activity", 
-            body=message, properties=pika.BasicProperties(delivery_mode = 2))
+            body=json.dumps(message), properties=pika.BasicProperties(delivery_mode = 2))
             return jsonify({
                 "code":200,
                 "message": member_update['message'],
                 "data": member_update['data']
             }), 200
-            
         else:
-            # message = member_update['message']
-            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="subscription.activity", 
-            body=message, properties=pika.BasicProperties(delivery_mode = 2))
+            message['error'] = member_update['message']
+            amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key="subscription.error", 
+            body=json.dumps(message), properties=pika.BasicProperties(delivery_mode = 2))
             return jsonify({
                 "code": member_update['code'],
                 "message": "An error occurred: " + member_update['message']
