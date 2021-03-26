@@ -29,7 +29,8 @@ def updateMembership():
             "membership-date": current_date
         }
         print("--------Invoking User microservice to update membership---------")
-        member_update = invoke_http('http://localhost:5004/user/membership/'+username,'PUT',submit_json)
+        membership_url = environ.get('user_URL') or 'http://localhost:5004/user/membership/'
+        member_update = invoke_http(membership_url + username,'PUT',submit_json)
         amqp_setup.check_setup()
         message = {
             "user": username,

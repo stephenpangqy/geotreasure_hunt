@@ -144,8 +144,6 @@ services:
       rabbit_port: 5672
       user_URL: http://user:5004/user/membership/
       PYTHONUNBUFFERED: 1
-    ports:
-      - "5100:5100"
 
   ###############################################
   # Box_Opening: The Box_Opening microservice
@@ -167,7 +165,7 @@ services:
       rabbit_host: rabbitmq
       rabbit_port: 5672
       geolocation_URL: http://geolocation:5001/
-      box_nearest_URL: http://box:5002/search
+      box_nearest_URL: http://box:5002/search?latitude=
       box_update_URL: http://box:5002/open
       user_URL: http://user:5004/user/openbox/
       PYTHONUNBUFFERED: 1
@@ -184,7 +182,7 @@ services:
     depends_on:
       - geolocation
       - box
-      - activity_log
+      - activity
       - error
       - rabbitmq
     environment:

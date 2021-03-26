@@ -2,7 +2,7 @@ from flask import Flask, render_template, jsonify, request
 from invokes import invoke_http
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-
+from os import environ
 import requests
 import json
 import amqp_setup
@@ -11,8 +11,8 @@ app = Flask(__name__)
 CORS(app)
 
 
-user_URL = "http://localhost:5004/"
-in_game_URL = "http://localhost:5005/"
+user_URL = environ.get('user_URL') or "http://localhost:5004/user/purchase/"
+in_game_URL = environ.get('ingame_shop_URL') or "http://localhost:5005/order"
 
 # NEED TO FIND A WAY TO PASS THIS DATA
 name = 'Michelle'
@@ -29,14 +29,14 @@ def take_order():
        data = request.get_json()
        print(data)
        print('\n-----Invoking in-game shop microservice-----')
-       get_item = invoke_http(in_game_URL + "order", method='POST',json = data)
+       get_item = invoke_http(in_game_URL, method='POST',json = data)
        print(get_item)
        if get_item['code'] == 500:
             message['error'] = "An error occurred while purchasing"
             return jsonify(get_item)
        else:
-            print('\n-----Invoking user microservice-----')
-            user_update = invoke_http(user_URL + "user/purchase/" + name, method='PUT',json = get_item)
+            print('\n-----Invoking user microservice to update purchase-----')
+            user_update = invoke_http(user_URL + name, method='PUT',json = get_item)
             # If got Error
             if user_update['code'] not in range(200,300):
                 message['error'] = user_update['message']

@@ -30,7 +30,8 @@ def OpenNearbyBox():
         if user_location['code'] == 200:
             latitude = user_location['result']['location']['lat']
             longitude = user_location['result']['location']['lng']
-            get_nearest_box_URL = 'http://localhost:5002/search?latitude=' + str(latitude) + '&longitude=' + str(longitude)
+            nearest_URL = environ.get('box_nearest_URL') or 'http://localhost:5002/search?latitude='
+            get_nearest_box_URL = nearest_URL + str(latitude) + '&longitude=' + str(longitude)
             box = getNearestBox(get_nearest_box_URL)
             print("---------Invoking Box microservice to get nearest box-----------")
             print(box)
@@ -47,7 +48,8 @@ def OpenNearbyBox():
                     }),200
                 else:
                     box_id = box_info['boxid']
-                    update_box_open = invoke_http('http://localhost:5002/open','PUT',{'boxid':box_id})
+                    box_update_url = environ.get('box_update_URL') or 'http://localhost:5002/open'
+                    update_box_open = invoke_http(box_update_url,'PUT',{'boxid':box_id})
                     print("------Invoking Box microservice to Update Status of Box to Y--------------")
                     print(update_box_open)
                     if update_box_open['code'] == 200:
@@ -91,7 +93,7 @@ def OpenNearbyBox():
 
 
 def getLocation():
-    geolocation_URL = "http://localhost:5001/"
+    geolocation_URL = environ.get('geolocation_URL') or "http://localhost:5001/"
     location = invoke_http(geolocation_URL)
     return location
 
@@ -100,7 +102,8 @@ def getNearestBox(url):
     return box
 
 def updateUser(boxjson,username):
-    user_openbox_url = 'http://localhost:5004/user/openbox/' + username
+    user_url = environ.get('user_URL') or 'http://localhost:5004/user/openbox/'
+    user_openbox_url = user_url + username
     update = invoke_http(user_openbox_url,'PUT',boxjson)
     return update
 

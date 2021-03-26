@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from os import environ
 from invokes import invoke_http
 import requests
 import random
@@ -21,7 +22,7 @@ def createBox():
         "user": user,
         "action": "Box Creation"
     }
-    geolocation_url = "http://localhost:5001/"
+    geolocation_url = environ.get('geolocation_URL') or "http://localhost:5001/"
     print("-------Invoking Geolocation Microservice-----------------")
     geo_result = invoke_http(geolocation_url)
     if geo_result['code'] != 200:
@@ -38,7 +39,7 @@ def createBox():
             "latitude": geo_result['result']['location']['lat'],
             "longitude": geo_result['result']['location']['lng']
         }
-        createbox_url = "http://localhost:5002/"
+        createbox_url = environ.get('box_create_URL') or "http://localhost:5002/"
         print("-------Invoking Box Microservice to create a box---------------")
         result = invoke_http(createbox_url,"POST",create_json)
         if result['code'] != 201:
