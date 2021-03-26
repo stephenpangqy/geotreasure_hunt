@@ -22,6 +22,7 @@ def createBox():
         "action": "Box Creation"
     }
     geolocation_url = "http://localhost:5001/"
+    print("-------Invoking Geolocation Microservice-----------------")
     geo_result = invoke_http(geolocation_url)
     if geo_result['code'] != 200:
         message['error'] = "An error occurred fetching the user's location."
@@ -38,6 +39,7 @@ def createBox():
             "longitude": geo_result['result']['location']['lng']
         }
         createbox_url = "http://localhost:5002/"
+        print("-------Invoking Box Microservice to create a box---------------")
         result = invoke_http(createbox_url,"POST",create_json)
         if result['code'] != 201:
             message['error'] = "Error occurred creating box : " + result['message']

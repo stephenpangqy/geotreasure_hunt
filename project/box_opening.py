@@ -14,7 +14,7 @@ app = Flask(__name__)
 CORS(app)
 
 # TEMP USERNAME: Need to figure out a way to update or pass this
-username = 'Mieka'
+username = 'Chrissa'
 
 @app.route("/")
 def OpenNearbyBox():
@@ -42,9 +42,9 @@ def OpenNearbyBox():
                     amqp_setup.channel.basic_publish(exchange=amqp_setup.exchangename, routing_key='box_opening.error',
                     body=json.dumps(message), properties=pika.BasicProperties(delivery_mode=2))
                     return jsonify({
-                        "code":403,
+                        "code":500,
                         "message": "You found your box! Unfortunately, you cant open your own box."
-                    }),403
+                    }),200
                 else:
                     box_id = box_info['boxid']
                     update_box_open = invoke_http('http://localhost:5002/open','PUT',{'boxid':box_id})
@@ -66,7 +66,7 @@ def OpenNearbyBox():
                                     "prize": update_user['data']['item_won'],
                                     "points": update_user['data']['points_earned']
                                 }
-                            }),200
+                            }),200 # changed this to 200 because it initially wouldnt display
 
 
             elif box['code'] == 404:
@@ -76,7 +76,7 @@ def OpenNearbyBox():
                 return jsonify({
                     "code":404,
                     "message": "There are no nearby boxes for you to open."
-                }),404
+                }),200 # changed this to 200 because it initially wouldnt display
 
 
 
@@ -86,7 +86,7 @@ def OpenNearbyBox():
                     body=json.dumps(message), properties=pika.BasicProperties(delivery_mode=2))
         return jsonify({
             "code":500,
-            "message":"box_opening.py encountered an internal error: " + str(e)
+            "message":"The site encountered an internal error: " + str(e)
         }),500
 
 

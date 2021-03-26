@@ -7,6 +7,10 @@
         height: 400px;  /* The height is 400 pixels */
         width: 100%;  /* The width is the width of the web page */
        }
+       .center {
+          margin-left: auto;
+          margin-right: auto;
+        }
     </style>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
@@ -15,6 +19,7 @@
   <body>
     <!-- TEMP STORAGE FOR USER-->
     <input type='hidden' id='current' value='Michelle'>
+
     <nav class="navbar navbar-expand-lg sticky-top navbar-light bg-light ">
       <a class="navbar-brand" href="#">GeoHunt</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,16 +31,38 @@
           <a class="nav-item nav-link" href="order.html">Rewards Shop</a>
           <a class="nav-item nav-link active" href="box_hunt.html">Box Hunt</a>
           <a class="nav-item nav-link" href="leaderboard.html">Leaderboards</a>
-          <a id="paying" class="nav-item nav-link active" href="payment.html">Buy Membership</a>
+          <a id="paying" class="nav-item nav-link" href="payment.html">Buy Membership</a>
         </div>
       </div>
     </nav>
-
-    <h3>Geo Hunt Map</h3>
     <!--The div element for the map -->
     <div id="map">
 
     </div>
+    <div id="notice"></div>
+    <div class='container'>
+      
+      <table class="table table-bordered w-25 center">
+        <thead class="thead-light">
+          <tr>
+            <th>Plant a Box</th>
+            <th>Dig up a Box</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td> <img src='img/treasure.jpeg' width=150 height=150> </td>
+            <td> <img src='img/search.png' width=150 height=150> </td>
+          </tr>
+          <tr>
+            <td> <button type="button" onclick="plantBox()" class="btn btn-info">Plant a Box</button></td>
+            <td> <button type="button" onclick="digTreasure()" class="btn btn-warning">Dig Treasure</button> </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+
     
     <script>
        let box_URL = "http://localhost:5002/getBoxes";
@@ -65,11 +92,11 @@
            }
            else {
              var box_data = await response.json();
-             console.log(box_data);
+             //console.log(box_data);
              for (box of box_data.boxes) {
-               console.log(box);
+               //console.log(box);
               const LatLng = { lat: parseFloat(box.box_latitude), lng: parseFloat(box.box_longitude) };
-              console.log(LatLng);
+              //console.log(LatLng);
               new google.maps.Marker({
                 position: LatLng,
                 icon: treasure,
@@ -120,6 +147,100 @@
                               'Error: The Geolocation service failed.' :
                               'Error: Your browser doesn\'t support geolocation.');
         
+      }
+
+      function plantBox() {
+        let user = document.getElementById("current").value;
+        document.getElementById("notice").innerHTML = "";
+        var createbox_url = "http://localhost:5008/"
+        async function plant() {
+          const response = await fetch(createbox_url, 
+            {
+              method: "POST", 
+              headers: {
+                           "Content-type": "application/json"
+                        },
+              body: JSON.stringify({"user": user})
+            }
+          );
+
+          if (!response.ok) {
+            console.log("Error creating box");
+          }
+          else {
+            const result_data = await response.json();
+            console.log(result_data);
+            if (result_data.code != 201) {
+              document.getElementById("notice").innerHTML = `<div class="alert alert-danger" role="alert">
+                An error occurred while creating box: `+ result_data.message + `
+              </div>`;
+            }
+            else {
+              document.getElementById("notice").innerHTML = `<div class="alert alert-success" role="alert">
+                Box created successfully. Refreshing the Map
+              </div>`;
+
+              setTimeout(function() {
+                window.location.replace("box_hunt.html");
+              }, 5000)
+            }
+          }
+        }
+        plant();
+      }
+
+      function digTreasure() {
+        document.getElementById("notice").innerHTML = "";
+        // TO BE COMPLETED
+        var box_open_url = "http://localhost:5003/"
+        async function dig() {
+          try {
+            const response = await fetch(box_open_url, {
+              method: 'GET',
+              headers: {
+                      "Content-type": "application/json"
+              }
+            });
+            
+            if (!response.ok) {
+              //console.log(response)
+              console.log("Error occurred while trying to dig.")
+              document.getElementById("notice").innerHTML = `<div class="alert alert-danger" role="alert">
+              Error occurred while digging for treasure
+              </div>`;
+            }
+            else {
+              const box_data = await response.json();
+              console.log(box_data);
+              // If no box found, own box found or other error
+              if (box_data.code == 200) {
+                document.getElementById("notice").innerHTML = `<div class="alert alert-success" role="alert">
+                You have found a box! You opened it and received <b>`+box_data.rewards.points+`</b> points. </div>`;
+                if (box_data.rewards.prize != null) {
+                  document.getElementById("notice").innerHTML += `
+                  <div class="alert alert-success" role="alert">
+                    You have also received the following prize from the box:
+                    <ul>
+                      <li>`+box_data.rewards.prize+`
+                    </ul>
+                    </div>`;
+                }
+              }
+              // Other error codes
+              else {
+                document.getElementById("notice").innerHTML = `<div class="alert alert-danger" role="alert">
+                `+box_data.message+`
+              </div>`;
+              }
+            }
+          }
+          catch(error) {
+            document.getElementById("notice").innerHTML = `<div class="alert alert-danger" role="alert">
+              Error occurred while digging for treasure: `+error+`
+              </div>`;
+          }
+        }
+        dig();
       }
 
       

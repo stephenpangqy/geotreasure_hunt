@@ -9,7 +9,6 @@ connection = pika.BlockingConnection(
         heartbeat=3600, blocked_connection_timeout=3600
     )
 )
-
 channel = connection.channel()
 
 #scenarios: ourchasing incentives, planting virtual box, opening box, purchasing membership

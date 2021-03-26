@@ -4,8 +4,6 @@ from flask_cors import CORS
 from invokes import invoke_http
 import requests
 import random
-import amqp_setup
-import pika
 import json
 
 app = Flask(__name__)
