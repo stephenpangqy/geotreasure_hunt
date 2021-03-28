@@ -14,19 +14,18 @@ CORS(app)
 user_URL = environ.get('user_URL') or "http://localhost:5004/user/purchase/"
 in_game_URL = environ.get('ingame_shop_URL') or "http://localhost:5005/order"
 
-# NEED TO FIND A WAY TO PASS THIS DATA
-name = 'Michelle'
 
 @app.route('/order',methods = ['POST'])
 def take_order():
-   # JSON TAKEN IN: { data: [ {name, qty}, {item, qty}, ... ]}
-   message = {
-       "user": name,
-       "action": "Purchase from Shop"
-   }
+   # JSON TAKEN IN: { username, data: [ {name, qty}, {item, qty}, ... ]}
    if request.method == 'POST':
        # This depends on the form submission format
        data = request.get_json()
+       name = data['username']
+       message = {
+            "user": name,
+            "action": "Purchase from Shop"
+       }
        print(data)
        print('\n-----Invoking in-game shop microservice-----')
        get_item = invoke_http(in_game_URL, method='POST',json = data)
@@ -57,5 +56,5 @@ def take_order():
 
 
 if __name__ == '__main__':
-    app.run(port=5007, debug=True)
+    app.run(host="0.0.0.0",port=5007, debug=True)
      

@@ -148,9 +148,8 @@
                               'Error: Your browser doesn\'t support geolocation.');
         
       }
-
+      var user = document.getElementById("current").value;
       function plantBox() {
-        let user = document.getElementById("current").value;
         document.getElementById("notice").innerHTML = "";
         var createbox_url = "http://localhost:5008/"
         async function plant() {
@@ -199,7 +198,8 @@
               method: 'GET',
               headers: {
                       "Content-type": "application/json"
-              }
+              },
+              body: JSON.stringify({"user": user})
             });
             
             if (!response.ok) {
@@ -216,7 +216,7 @@
               if (box_data.code == 200) {
                 document.getElementById("notice").innerHTML = `<div class="alert alert-success" role="alert">
                 You have found a box! You opened it and received <b>`+box_data.rewards.points+`</b> points. </div>`;
-                if (box_data.rewards.prize != null) {
+                if (box_data.rewards.prize != "") {
                   document.getElementById("notice").innerHTML += `
                   <div class="alert alert-success" role="alert">
                     You have also received the following prize from the box:

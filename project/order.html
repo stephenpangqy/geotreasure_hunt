@@ -10,6 +10,7 @@
    <body>
       <!-- TEMP STORAGE FOR USER-->
       <input type='hidden' id='current' value='Michelle'>
+      <!-- TEMP STORAGE FOR USER-->
 
       <nav class="navbar navbar-expand-lg sticky-top navbar-light bg-light ">
          <a class="navbar-brand" href="#">GeoHunt</a>
@@ -47,6 +48,7 @@
       </form>   
    </body>
    <script>
+      var user = document.getElementById("current").value;
       var item_list = [];
       async function getItems() {
          var shop_url = 'http://localhost:5005/getitems';
@@ -97,7 +99,7 @@
       function formSubmit() {
          $('#notice').text("");
          $('#success').text("")
-         cart_data = {"data": [] }
+         cart_data = {"username": user, "data": [] }
          let form = document.getElementById("form").elements;
          //console.log(form);
          for (j=0;j<form.length-1;j++) {

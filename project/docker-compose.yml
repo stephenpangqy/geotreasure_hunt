@@ -16,6 +16,8 @@ services:
     restart: always
     environment:
       PYTHONUNBUFFERED: 1
+    ports:
+        - "5001:5001"
  
   #######################################################
   # Ingame_Shop: The Ingame_Shop microservice
@@ -29,6 +31,8 @@ services:
     environment:
       dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/ingame_shop
       PYTHONUNBUFFERED: 1
+    ports:
+        - "5005:5005"
 
   ####################################
   # RabbitMQ: The messaging broker   
@@ -89,6 +93,8 @@ services:
     environment:
       dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/box
       PYTHONUNBUFFERED: 1
+    ports:
+        - "5002:5002"
 
 
   ##################################
@@ -103,6 +109,8 @@ services:
     environment:
       dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/user
       PYTHONUNBUFFERED: 1
+    ports:
+        - "5004:5004"
 
   ###############################################
   # Order: The Order microservice
@@ -125,6 +133,8 @@ services:
       ingame_shop_URL: http://ingame_shop:5005/order
       user_URL: http://user:5004/user/purchase/
       PYTHONUNBUFFERED: 1
+    ports:
+        - "5007:5007"
   
   ###############################################
   # Subscription: The Subscription microservice
@@ -144,6 +154,8 @@ services:
       rabbit_port: 5672
       user_URL: http://user:5004/user/membership/
       PYTHONUNBUFFERED: 1
+    ports:
+        - "5006:5006"
 
   ###############################################
   # Box_Opening: The Box_Opening microservice
@@ -169,6 +181,8 @@ services:
       box_update_URL: http://box:5002/open
       user_URL: http://user:5004/user/openbox/
       PYTHONUNBUFFERED: 1
+    ports:
+        - "5003:5003"
 
   ###############################################
   # Create_Box: The Create_Box microservice
@@ -191,3 +205,5 @@ services:
       geolocation_URL: http://geolocation:5001/
       box_create_URL: http://box:5002/
       PYTHONUNBUFFERED: 1
+    ports:
+        - "5008:5008"

@@ -15,10 +15,11 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 app = Flask(__name__)
 
 # SQL settings
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/user'
+app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL') or 'mysql+mysqlconnector://root@localhost:3306/user'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_recycle': 299}
 
-#changes for user account
+# Login settings
 app.config['SECRET_KEY'] = 'Thisissupposedtobesecret!'
 bootstrap = Bootstrap(app)
 login_manager = LoginManager()

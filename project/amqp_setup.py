@@ -1,8 +1,9 @@
 import pika
+from os import environ
 
 # ----------  Establish Connection  ---------- #
-hostname = 'localhost'
-port = 5672
+hostname = environ.get('rabbit_host') or 'localhost'
+port = environ.get('rabbit_port') or 5672
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(
         host=hostname, port=port,

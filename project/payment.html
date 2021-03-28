@@ -81,7 +81,7 @@
                         });
                         if (!response.ok) {
                             //console.log("Error when returning.")
-                            window.location.replace("error.html");
+                            window.location.replace("error_page.html");
                         }
                         else {
                           const data = await response.json();
@@ -90,7 +90,7 @@
                             window.location.replace("success.html");
                           }
                           else {
-                            window.location.replace("error.html");
+                            window.location.replace("error_page.html");
                           }
                         }
                     }

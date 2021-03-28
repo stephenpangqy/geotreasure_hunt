@@ -13,12 +13,12 @@ import json
 app = Flask(__name__)
 CORS(app)
 
-# TEMP USERNAME: Need to figure out a way to update or pass this
-username = 'Chrissa'
-
 @app.route("/")
 def OpenNearbyBox():
+    # JSON PASSED INTO: {user}
     try:
+        data = request.get_json()
+        username = data['user']
         message = {
             "user": username,
             "action": "Box Opening"
