@@ -92,8 +92,7 @@ class user_inventory(db.Model):
 
     def json(self):
         return{
-            "username":self.username,
-            "itemID":self.itemname,
+            "itemname":self.itemname,
             "quantity":self.quantity
         }
 
@@ -110,6 +109,26 @@ def get_user(username):
             "code":404,
             "user": "Not found."
         }),404
+
+@app.route("/user/getInventory/<string:username>")
+def get_inventory(username):
+    inventory_list = []
+    inventory_list = user_inventory.query.filter_by(username=username)
+    if inventory_list == []:
+        return jsonify({
+            "code":200,
+            "inventory": "You have no items in your inventory."
+        }), 200
+    else:
+        item_list = []
+        for inventory in inventory_list:
+            item_list.append(inventory.json())
+        
+        return jsonify({
+            "code": 200,
+            "inventory": item_list
+        }), 200
+
 
 
 

@@ -12,7 +12,7 @@ services:
     build:
       context: ./
       dockerfile: geolocation.Dockerfile
-    image: 02031998/gelocation:g9th
+    image: 02031998/gelocation:g4th
     restart: always
     environment:
       PYTHONUNBUFFERED: 1
@@ -26,7 +26,7 @@ services:
     build:
       context: ./
       dockerfile: ingame_shop.Dockerfile
-    image: 02031998/ingame_shop:g9th
+    image: 02031998/ingame_shop:g4th
     restart: always
     environment:
       dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/ingame_shop
@@ -54,7 +54,7 @@ services:
     build:
       context: ./
       dockerfile: activity.Dockerfile
-    image: 02031998/activity:g9th
+    image: 02031998/activity:g4th
     restart: always
     depends_on:
       - rabbitmq
@@ -71,7 +71,7 @@ services:
     build:
       context: ./
       dockerfile: error.Dockerfile
-    image: 02031998/error:g9th
+    image: 02031998/error:g4th
     restart: always
     depends_on:
       - rabbitmq
@@ -88,7 +88,7 @@ services:
     build:
       context: ./
       dockerfile: box.Dockerfile
-    image: 02031998/box:g9th
+    image: 02031998/box:g4th
     restart: always
     environment:
       dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/box
@@ -104,7 +104,7 @@ services:
     build:
       context: ./
       dockerfile: user.Dockerfile
-    image: 02031998/user:g9th
+    image: 02031998/user:g4th
     restart: always
     environment:
       dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/user
@@ -119,7 +119,7 @@ services:
     build:
       context: ./
       dockerfile: order.Dockerfile
-    image: 02031998/order:g9th
+    image: 02031998/order:g4th
     restart: always
     depends_on:
       - ingame_shop
@@ -143,7 +143,7 @@ services:
     build:
       context: ./
       dockerfile: subscription.Dockerfile
-    image: 02031998/subscription:g9th
+    image: 02031998/subscription:g4th
     restart: always
     depends_on:
       - user
@@ -164,7 +164,7 @@ services:
     build:
       context: ./
       dockerfile: box_opening.Dockerfile
-    image: 02031998/box_opening:g9th
+    image: 02031998/box_opening:g4th
     restart: always
     depends_on:
       - geolocation
@@ -191,7 +191,7 @@ services:
     build:
       context: ./
       dockerfile: create_box.Dockerfile
-    image: 02031998/create_box:g9th
+    image: 02031998/create_box:g4th
     restart: always
     depends_on:
       - geolocation

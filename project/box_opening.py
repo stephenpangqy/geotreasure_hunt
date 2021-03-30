@@ -13,7 +13,7 @@ import json
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/")
+@app.route("/",methods=["POST"])
 def OpenNearbyBox():
     # JSON PASSED INTO: {user}
     try:

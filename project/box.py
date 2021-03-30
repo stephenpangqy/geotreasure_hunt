@@ -38,6 +38,8 @@ class Box(db.Model):
         }
 
 # Obtains a list of Boxes that are Unopened to display on the map
+# http://(micro_name):(port no.)/(route)
+
 @app.route("/getBoxes")
 def getBoxes():
     try:
