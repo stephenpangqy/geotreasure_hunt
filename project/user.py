@@ -77,6 +77,12 @@ class users(UserMixin,db.Model):
             "username":self.username,
             "current_points":self.current_points
         }
+    
+    def memjson(self):
+        return {
+            "username": self.username,
+            "is_member": self.is_member
+        }
 
 
 class user_inventory(db.Model):
@@ -95,6 +101,21 @@ class user_inventory(db.Model):
             "itemname":self.itemname,
             "quantity":self.quantity
         }
+
+@app.route('/user/checkmember/<string:username>')
+def check_member(username):
+    user = users.query.filter_by(username=username).first()
+    if user:
+        return {
+            "code": 200,
+            "user": user.memjson()
+        },200
+    else:
+        return {
+            "code": 404,
+            "message": 'User not found.'
+        }
+
 
 @app.route("/user/<string:username>")
 def get_user(username):

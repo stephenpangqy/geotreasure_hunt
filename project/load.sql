@@ -47,9 +47,11 @@ create table in_game_shop_items (
 );
 
 # ADDING SAMPLE SHOP ITEM DATA
-INSERT INTO in_game_shop_items VALUES ('$20 Gongcha Voucher', 250, 'Redeem this to get a $20 Gongcha Voucher.');
-INSERT INTO in_game_shop_items VALUES ('Straw', 3, 'A simple straw.');
-INSERT INTO in_game_shop_items VALUES ('$10 GrabVoucher', 100, 'Redeem this to get a $10 Voucher that you can use on Grab.');
+INSERT INTO in_game_shop_items VALUES ('$20 Gongcha Voucher', 550, 'Redeem this to get a $20 Gongcha Voucher.');
+INSERT INTO in_game_shop_items VALUES ('$5 Capitaland Voucher', 220, 'Redeem this to get a $5 Capitaland Voucher.');
+INSERT INTO in_game_shop_items VALUES ('$3 Li-Ho Voucher', 130, 'Redeem to get a $3 Li_Ho Voucher.');
+INSERT INTO in_game_shop_items VALUES ('$1 Popular Voucher', 80, 'Redeem to get a $1 Popular Voucher.');
+INSERT INTO in_game_shop_items VALUES ('$10 GrabVoucher', 350, 'Redeem this to get a $10 Voucher that you can use on Grab.');
 
 
 drop database if exists box;
@@ -69,9 +71,9 @@ create table box (
 # SAMPLE BOX DATA
 INSERT INTO box (box_contents,no_of_points,box_latitude,box_longitude,planted_by_username,is_opened) VALUES ('$30 GrabVoucher',54,1.2345,1.5345,'Michelle','N');
 INSERT INTO box (box_contents,no_of_points,box_latitude,box_longitude,planted_by_username,is_opened) VALUES (null,203,1.4567,1.8924,'Michelle','N');
-INSERT INTO box (box_contents,no_of_points,box_latitude,box_longitude,planted_by_username,is_opened) VALUES ('1-for-1 GongCha Voucher',100,0.9343,0.82354,'Michelle','N');
+INSERT INTO box (box_contents,no_of_points,box_latitude,box_longitude,planted_by_username,is_opened) VALUES ('$3 Li-Ho Voucher',100,0.9343,0.82354,'Michelle','N');
 INSERT INTO box (box_contents,no_of_points,box_latitude,box_longitude,planted_by_username,is_opened) VALUES (null,123,1.456,1.4555,'Meghan','N');
-INSERT INTO box (box_contents,no_of_points,box_latitude,box_longitude,planted_by_username,is_opened) VALUES ('1-for-1 GongCha Voucher',100,1.29838869,103.856419,'Michelle','N');
+INSERT INTO box (box_contents,no_of_points,box_latitude,box_longitude,planted_by_username,is_opened) VALUES ('$10 GrabVoucher',100,1.29838869,103.856419,'Michelle','N');
 
 drop database if exists ActivityLog;
 create database ActivityLog;

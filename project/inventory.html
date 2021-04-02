@@ -63,7 +63,6 @@
             <table class="table table-bordered">
                 <tr>
                     <th>Item Name</th>
-                    <th>Item Picture</th>
                     <th>Quantity</th>
                     <th>Redeem</th>
                 </tr>
@@ -72,7 +71,6 @@
                 </tr>
                 <tr v-else v-for="item of inventory">
                     <td>{{ item.itemname }}</td>
-                    <td>TBA</td> <!-- Need to add image-->
                     <td>{{ item.quantity }}</td>
                     <td><a href='#'>Redeem</a></td> <!-- If got time fix this.-->
                 </tr>

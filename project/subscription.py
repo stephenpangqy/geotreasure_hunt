@@ -13,8 +13,6 @@ import pika
 app = Flask(__name__)
 CORS(app)
 
-# TEMP USERNAME: Need to figure out a way to update or pass this
-# username = 'Michelle'
 
 @app.route('/',methods=["POST"])
 def updateMembership():

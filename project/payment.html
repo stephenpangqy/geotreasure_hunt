@@ -57,8 +57,14 @@
 
           <div class="container">
             <h1 style='text-align:center;'>GeoTreasure Membership Purchase</h1>
+            <h3>With membership, you can get the following benefits</h3>
+            <ul>
+              <li>20% Discount at our In-game Shop</li>
+              <li><b>Double points</b> from opening prize boxes</li>
+            </ul>
             <br> <br>
             <div style='text-align:center;' id="paypal-button-container"></div>
+            <div class="center" id='notice'></div>
           </div>
         </div>
 
@@ -108,14 +114,49 @@
             paypal.Buttons({
               createOrder: function(data, actions) {
                 // This function sets up the details of the transaction, including the amount and line item details.
-                return actions.order.create({
-                  purchase_units: [{
-                    description: 'GeoTreasure Membership',
-                    amount: {
-                      value: '0.01' // MUST CHANGE TO PRICE OF MEMBERSHIP
+                async function check_member() {
+                  $("#notice").text = ""
+                  $("#notice").removeClass("alert alert-danger");
+                  let username = document.getElementById("current").value;
+                  let check_member_url = 'http://localhost:5004/user/checkmember/' + username
+                  const response = await fetch(check_member_url, {method: 'GET'})
+                  if (!response.ok) {
+                    $("#notice").addClass("alert alert-danger");
+                    $("#notice").text = "An error occurred when trying to check your membership."
+                    return false;
+                  }
+                  else {
+                    const user_data = await response.json();
+                    if (user_data.code != 200) {
+                      $("#notice").addClass("alert alert-danger");
+                      $("#notice").text = "An error occurred when trying to check your membership. (404)"
+                      return false;
                     }
-                  }]
-                });
+                    else {
+                      let is_member = user_data.user.is_member;
+                      if (is_member == "Y") {
+                        $("#notice").addClass("alert alert-danger");
+                        $("#notice").html = "You are already a member, you may not purchase it again."
+                        return false;
+                      }
+                      else {
+                        return true;
+                      }
+                    }
+                  }
+                }
+                let check_pass = check_member();
+                console.log(check_pass)
+                if (check_pass) {
+                  return actions.order.create({
+                          purchase_units: [{
+                            description: 'GeoTreasure Membership',
+                            amount: {
+                              value: '0.01' // MUST CHANGE TO PRICE OF MEMBERSHIP
+                            }
+                          }]
+                  });
+                }
               },
               onApprove: function(data, actions) {
                 // This function captures the funds from the transaction.

@@ -76,12 +76,14 @@ def create_box():
     # randomly generate number of points and rewards (MAY NEED TO EDIT)
     no_of_points = random.randint(1,300)
     no_of_prize = random.randint(0,1)
-    prize_list = ['$5 GrabVoucher','$10 GrabVoucher','20% OFF Popular Voucher','1-for-1 LiHo Tea Voucher','1-for-1 Gong Cha']
+    prize_list = ['$20 Gongcha Voucher','$5 Capitaland Voucher','$3 Li-Ho Voucher','$1 Popular Voucher','$10 GrabVoucher']
     box_prizes = []
     for i in range(0,no_of_prize):
         index = random.randint(0,len(prize_list)-1)
         box_prizes.append(prize_list[index])
     box_prizes_string = ','.join(box_prizes)
+    if box_prizes_string == "":
+        box_prizes_string = None
     box = Box(box_contents=box_prizes_string,no_of_points=no_of_points,box_latitude=latitude,box_longitude=longitude,planted_by_username=plant_username,is_opened = 'N')
 
     try:
