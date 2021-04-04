@@ -1,5 +1,6 @@
 <html>
    <head>
+      <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Ensures optimal rendering on mobile devices. -->
       <meta http-equiv="X-UA-Compatible" content="IE=edge" /> <!-- Optimal Internet Explorer compatibility -->
       <!-- Bootstrap CSS -->
@@ -240,6 +241,8 @@
                      }
                      else if (data.code == 500) {
                         $('#notice').text("You do not have enough points purchase. Remove some items from your cart!")
+                        $("#loading").removeClass('loading')
+                        $("#overlay").removeClass('uil-ring-css transform')
                      }
                      else if (data.code == 404) {
                         $('#notice').text("Your cart is empty!")

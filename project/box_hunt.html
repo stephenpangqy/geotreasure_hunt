@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>Box Hunt Map</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
        /* Set the size of the div element that contains the map */
       #map {
@@ -82,7 +86,7 @@
           </div>
 
           <div class="row">
-            <table class="table table-bordered w-25 center">
+            <table class="table table-bordered center">
               <thead class="thead-light">
                 <tr>
                   <th>Plant a Box</th>
@@ -96,7 +100,10 @@
                 </tr>
                 <tr>
                   <td> <button id="plantBtn" type="button" onclick="plantBox()" class="btn btn-info">Plant a Box</button></td>
-                  <td><button id="digBtn" type="button" onclick="digTreasure()" class="btn btn-warning">Dig Treasure</button></td>
+                  <td> <button id="digBtn" type="button" onclick="digTreasure()" class="btn btn-warning">Dig Treasure</button></td>
+                </tr>
+                <tr>
+                  <td colspan='2'>You have <b>{{ daily_boxes }}</b> boxes ready to be planted.</td>
                 </tr>
               </tbody>
             </table>
@@ -119,7 +126,8 @@
          },
          data: {
            "user": current_user,
-           "is_member": false
+           "is_member": false,
+           "daily_boxes": "loading...."
          },
          methods: {
           getUserData: async function() {
@@ -136,6 +144,7 @@
                   console.log("User not found!")
                 }
                 else {
+                  this.daily_boxes = user_data.user.daily_boxes;
                   if (user_data.user.is_member == "Y") {
                     this.is_member = true;
                     $("#member").addClass('alert alert-info');

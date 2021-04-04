@@ -202,8 +202,10 @@ services:
     environment:
       rabbit_host: rabbitmq
       rabbit_port: 5672
+      checkbox_URL: http://user:5004/user/boxcount/
       geolocation_URL: http://geolocation:5001/
       box_create_URL: http://box:5002/
+      usebox_URL: http://user:5004/user/useBox
       PYTHONUNBUFFERED: 1
     ports:
         - "5008:5008"

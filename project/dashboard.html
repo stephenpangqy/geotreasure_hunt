@@ -59,6 +59,7 @@
     <div class="container-fluid">
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           <h1 class="page-header">Welcome, {{ user }}</h1>
+          <div id="login"></div>
 
           <div class="row placeholders">
             <div class="col-xs-8 col-sm-4 placeholder">
@@ -79,6 +80,13 @@
               <span v-if="is_member === true" class="text-muted">Thank you for supporting the GeoTreasure Hunt!</span>
               <span v-else class="text-muted">Members get extra benefits and bonuses, purchase it now!</span>
             </div>
+          </div>
+
+          <div class="row placeholders">
+            <hr>
+            <h3 v-if="daily_boxes != 0">You have {{ daily_boxes }} boxes. Go to the Box Hunt and plant them!</h3>
+            <h3 v-else>You have no boxes to plant. Wait till tomorrow to receive more.</h3>
+            <hr>
           </div>
 
           <h2 class="sub-header">Leaderboards</h2>
@@ -146,19 +154,18 @@
     <script>
       var user_URL = 'http://localhost:5004/user/'
       var top10_URL = 'http://localhost:5004/user/leaderboardRank'
+      var lastloginURL = 'http://localhost:5004/user/lastlogin'
 
       var current_user = document.getElementById("current").value;
       var app = new Vue({
         el: "#app",
-        computed: {
-
-        },
         data: {
           "user": current_user,
           "boxes_opened": "loading...",
           "current_points": "loading...",
           "total_points": "loading...",
           "is_member": false,
+          "daily_boxes": "loading...",
           "top3_points": [],
           "top3_box": [],
           "top3_points_users":[],
@@ -170,6 +177,33 @@
 
         },
         methods: {
+          newLoginBox: async function() {
+            const response = await fetch(
+              lastloginURL, 
+              { method: 'PUT',
+                headers: {
+                            "Content-type": "application/json"
+                          },
+                body: JSON.stringify({"username": current_user})
+              });
+
+            if (!response.ok) {
+              console.log("Error trying to update Last Login");
+            }
+            else {
+              const login_data = await response.json();
+              console.log(login_data);
+              if (login_data.code != 200) {
+                console.log("Can't record login, user not found!"); 
+              }
+              else {
+                if (login_data.message != "User logged in today already.") {
+                  $("#login").text(login_data.message);
+                  $("#login").addClass("alert alert-info");
+                }
+              }
+            }
+          },
           getUserData: async function() {
             const response = 
               await fetch(user_URL + this.user, {method: 'GET'});
@@ -187,6 +221,7 @@
                   this.boxes_opened = user_data.user.boxes_open;
                   this.current_points = user_data.user.current_points;
                   this.total_points = user_data.user.total_points;
+                  this.daily_boxes = user_data.user.daily_boxes;
                   if (user_data.user.is_member == "Y") {
                     this.is_member = true;
                   }
@@ -228,6 +263,7 @@
           }
         },
         created: function() {
+          this.newLoginBox();
           this.getUserData();
           this.getTop3();
         }

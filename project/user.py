@@ -29,16 +29,17 @@ login_manager.login_view = 'login'
 db = SQLAlchemy(app)
 CORS(app)
 
-class users(UserMixin,db.Model):
+class users(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(300), unique=True)
-    password = db.Column(db.String(80), nullable=False)
     is_member = db.Column(db.String(1), nullable=False)
     membership_date = db.Column(db.Date)
     current_points = db.Column(db.Integer)
     total_points = db.Column(db.Integer)
     boxes_open = db.Column(db.Integer)
+    last_login = db.Column(db.Date)
+    daily_boxes = db.Column(db.Integer)
 
     # def __init__(self, id, username, password, is_member, membership_date,current_points,total_points, boxes_open):
     #     self.id = id
@@ -57,7 +58,9 @@ class users(UserMixin,db.Model):
         "membership_date":self.membership_date,
         "current_points":self.current_points,
         "total_points":self.total_points,
-        "boxes_open":self.boxes_open
+        "boxes_open":self.boxes_open,
+        "last_login":self.last_login,
+        "daily_boxes":self.daily_boxes
         }
     
     def lbpjson(self):
@@ -84,6 +87,12 @@ class users(UserMixin,db.Model):
             "is_member": self.is_member
         }
 
+    def boxjson(self):
+        return {
+            "username": self.username,
+            "daily_boxes": self.daily_boxes
+        }
+
 
 class user_inventory(db.Model):
     __tablename__ = 'user_inventory'
@@ -102,19 +111,104 @@ class user_inventory(db.Model):
             "quantity":self.quantity
         }
 
+@app.route('/user/boxcount/<string:username>')
+def boxCount(username):
+    user = users.query.filter_by(username=username).first()
+    if user:
+        return jsonify({
+            "code":200,
+            "data": user.boxjson()
+        }),200
+    else:
+        return jsonify({
+            "code": 404,
+            "message": "User is not found"
+        }),404
+
+
+@app.route('/user/useBox',methods=['PUT'])
+def useBox():
+    # JSON PASSED - {username}
+    data = request.get_json()
+    username = data['username']
+
+    user = users.query.filter_by(username=username).first()
+
+    if user:
+        if user.daily_boxes == 0:
+            return jsonify({
+                "code":500,
+                "message": "You have zero boxes."
+            })
+        else:
+            user.daily_boxes -= 1
+            db.session.commit()
+            return jsonify({
+                "code":200,
+                "message": "Deduction of box is successful"
+            })
+    else:
+        return jsonify({
+            "code": 404,
+            "message": 'User not found.'
+        })
+
+
+@app.route('/user/lastlogin',methods=['PUT'])
+def updateLastLogin():
+    # JSON PASSED - {username}
+    data = request.get_json()
+    username = data['username']
+    
+    user = users.query.filter_by(username=username).first()
+    if user:
+        login_date = datetime.today().strftime('%Y-%m-%d')
+        is_member = False
+        if user.is_member == "Y":
+            is_member = True
+        user_last_login = user.last_login
+        if str(user_last_login) == str(login_date):
+            return jsonify({
+                "code": 200,
+                "message": "User logged in today already."
+            })
+        else:
+            user.last_login = login_date
+            if is_member:
+                user.daily_boxes = 5
+            else:
+                user.daily_boxes = 3
+            db.session.commit()
+
+            return jsonify({
+                "code": 200,
+                "message": "Welcome back, you have received " + str(user.daily_boxes) +" boxes. Happy planting!",
+            })
+
+
+
+    else:
+        return jsonify({
+            "code": 404,
+            "message": 'User not found.'
+        })
+
+
+
+
 @app.route('/user/checkmember/<string:username>')
 def check_member(username):
     user = users.query.filter_by(username=username).first()
     if user:
-        return {
+        return jsonify({
             "code": 200,
             "user": user.memjson()
-        },200
+        }),200
     else:
-        return {
+        return jsonify({
             "code": 404,
             "message": 'User not found.'
-        }
+        })
 
 
 @app.route("/user/<string:username>")
@@ -266,6 +360,11 @@ def openbox(username):
     #get record for user
     points = users.query.filter_by(username=username).first()
 
+    #check if user is a member
+    is_member = False
+    if points.is_member == "Y":
+        is_member = True
+
     #get box stuff from content 
     data = request.get_json()
     itemname = data['box_contents']
@@ -300,8 +399,12 @@ def openbox(username):
                     }
                 ), 500
         #update user point in user db
+
         #check if requested user is sync with db user
         #update points of the user
+        if is_member:
+            print("double points cause member")
+            data['no_of_points'] *= 2
         points.total_points += data['no_of_points']
         points.current_points += data['no_of_points']
         #update user number of boxes open
@@ -337,6 +440,11 @@ def purchase(username):
     #get record for user
     user = users.query.filter_by(username=username).first()
 
+    # Check if user is a member
+    is_member = False
+    if user.is_member == "Y":
+        is_member = True
+
     #check if there is such user is in our user database
     if user:
         user_balance = user.current_points
@@ -344,6 +452,8 @@ def purchase(username):
         if cart != []:
             subtotal = 0
             for item_dict in cart:
+                if is_member:
+                    item_dict['price'] *= 0.80
                 subtotal += item_dict['price'] * int(item_dict['quantity'])
             #print(subtotal)
             #print(user_balance)

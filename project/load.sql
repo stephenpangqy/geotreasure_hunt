@@ -5,28 +5,29 @@ use user;
 create table users (
   id int AUTO_INCREMENT primary key,
 	username varchar(300) not null,
-  password varchar(80) not null,
   is_member char(1) not null, # Y for Yes, # N forNo
   membership_date date,
   current_points int,
   total_points int,
   boxes_open int,
+  last_login date,
+  daily_boxes int,
 
   UNIQUE(username)
 );
 
 # ADDING SAMPLE user data
-INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open) VALUES ('Sarah Baumert','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 235, 500, 2);
-INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Michelle','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 5555, 5555, 5);
-INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Meghan','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 234, 556, 1);
-INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Christine','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 22, 55, 0);
-INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Mieka','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 3, 3, 0);
-INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Lunatone','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 112, 112, 5);
-INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Torrence','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 2414, 5323, 12);
-INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Monique','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 44, 52, 3);
-INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Yuri','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 1253, 1530, 8);
-INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Alison','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8', 'N', null, 502, 502, 4);
-INSERT into users (username,password,is_member,membership_date,current_points,total_points,boxes_open)VALUES ('Chrissa','5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8','N', null, 0, 2, 0);
+INSERT into users (username,is_member,membership_date,current_points,total_points,boxes_open,last_login,daily_boxes) VALUES ('Sarah Baumert', 'N', null, 235, 500, 2, null, 3);
+INSERT into users (username,is_member,membership_date,current_points,total_points,boxes_open,last_login,daily_boxes)VALUES ('Michelle', 'N', null, 5555, 5555, 5, null, 3);
+INSERT into users (username,is_member,membership_date,current_points,total_points,boxes_open,last_login,daily_boxes)VALUES ('Meghan', 'N', null, 234, 556, 1, null, 3);
+INSERT into users (username,is_member,membership_date,current_points,total_points,boxes_open,last_login,daily_boxes)VALUES ('Christine', 'N', null, 22, 55, 0, null, 3);
+INSERT into users (username,is_member,membership_date,current_points,total_points,boxes_open,last_login,daily_boxes)VALUES ('Mieka', 'N', null, 3, 3, 0, null, 3);
+INSERT into users (username,is_member,membership_date,current_points,total_points,boxes_open,last_login,daily_boxes)VALUES ('Lunatone', 'N', null, 112, 112, 5, null, 3);
+INSERT into users (username,is_member,membership_date,current_points,total_points,boxes_open,last_login,daily_boxes)VALUES ('Torrence', 'N', null, 2414, 5323, 12, null, 3);
+INSERT into users (username,is_member,membership_date,current_points,total_points,boxes_open,last_login,daily_boxes)VALUES ('Monique', 'N', null, 44, 52, 3, null, 3);
+INSERT into users (username,is_member,membership_date,current_points,total_points,boxes_open,last_login,daily_boxes)VALUES ('Yuri', 'N', null, 1253, 1530, 8, null, 3);
+INSERT into users (username,is_member,membership_date,current_points,total_points,boxes_open,last_login,daily_boxes)VALUES ('Alison', 'N', null, 502, 502, 4, null, 3);
+INSERT into users (username,is_member,membership_date,current_points,total_points,boxes_open,last_login,daily_boxes)VALUES ('Chrissa', 'N', null, 0, 2, 0, null, 3);
 
 create table user_inventory (
 	  username varchar(300) not null,
