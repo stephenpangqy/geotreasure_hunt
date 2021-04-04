@@ -78,7 +78,7 @@
                </tr>
             </table>
          </form>   
-         <br>
+         
          <div id="member"></div>
       </div>
 
@@ -143,7 +143,6 @@
                         item_list.push(shop_items.shop_items[i].itemname);
                         if (this.is_member) {
                            shop_items.shop_items[i].price *= 0.80
-                           // NEED TO EDIT USER MICROSERVICE TO PROCESS DEDUCTION.
                         }
                         document.getElementById("sale_table").innerHTML += 
                         `<tr>
@@ -185,7 +184,8 @@
          $("#loading").addClass('loading')
          $("#overlay").addClass('uil-ring-css transform')
          $('#notice').text("");
-         $('#success').text("")
+         $('#success').text("");
+         $('#member').css('z-index',-99999999);
          cart_data = {"username": user, "data": [] }
          let form = document.getElementById("form").elements;
          //console.log(form);
