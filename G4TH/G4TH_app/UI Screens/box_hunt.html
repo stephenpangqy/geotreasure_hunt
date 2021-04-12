@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Box Hunt Map</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+       /* Set the size of the div element that contains the map */
+      #map {
+        height: 400px;  /* The height is 400 pixels */
+        width: 100%;  /* The width is the width of the web page */
+       }
+       .center {
+          margin-left: auto;
+          margin-right: auto;
+        }
+    </style>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="../static/css/loading.css">
+    <link rel="stylesheet" href="../static/css/dashboard.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+    <div id="loading">
+      <div id='overlay'>
+         <div></div>
+      </div>
+    </div>
+  <div id='app'>
+      <!-- TEMP STORAGE FOR USER-->
+      <input type='hidden' id='current' value='Michelle'>
+      <!-- TEMP STORAGE FOR USER-->
+      <nav class="navbar navbar-expand-lg sticky-top navbar-light bg-light">
+        <a class="navbar-brand" href="#"> <img src='../img/logo.jpg' height=50 width=120> </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="dashboard.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="order.html">Rewards Shop</a>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="box_hunt.html">Box Hunt</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="leaderboard.html">Leaderboards</a>
+            </li>
+            <li class="nav-item" v-if="is_member !== true">
+              <a class="nav-link" href="payment.html">Buy Membership</a>
+            </li>
+            <li class="nav-item" v-else>
+              <a class="nav-link disabled" href="payment.html">I'm a Member</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Hi, {{ user }}
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <a class="dropdown-item" href="inventory.html">My Inventory</a>
+                <a class="dropdown-item" href="#">Log Out</a>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="container-fluid">
+          <!--The div element for the map -->
+          <div class="row">
+            <div id="map">
+
+            </div>
+          </div>
+          <div class="row">
+            <div id="notice" class="center" style='margin-top:5px;'></div>
+          </div>
+
+          <div class="row">
+            <table class="table table-bordered center">
+              <thead class="thead-light">
+                <tr>
+                  <th>Plant a Box</th>
+                  <th>Dig up a Box</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td> <img src='../img/treasure.jpeg' width=150 height=150> </td>
+                  <td><img src='../img/search.png' width=150 height=150></td>
+                </tr>
+                <tr>
+                  <td> <button id="plantBtn" type="button" onclick="plantBox()" class="btn btn-info">Plant a Box</button></td>
+                  <td> <button id="digBtn" type="button" onclick="digTreasure()" class="btn btn-warning">Dig Treasure</button></td>
+                </tr>
+                <tr>
+                  <td colspan='2'>You have <b>{{ daily_boxes }}</b> boxes ready to be planted.</td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="member" style='z-index:-999999;'></div>
+          </div>
+        
+        </div>
+  </div>
+
+    
+    <script>
+       let box_URL = "http://localhost:8000/getBoxes";
+       var user_URL = 'http://localhost:8000/user/'
+       var current_user = document.getElementById("current").value;
+       var app = new Vue({
+         el: "#app",
+         computed: {
+
+         },
+         data: {
+           "user": current_user,
+           "is_member": false,
+           "daily_boxes": "loading...."
+         },
+         methods: {
+          getUserData: async function() {
+            const response = 
+              await fetch(user_URL + this.user, {method: 'GET'});
+
+              if (!response.ok) {
+                console.log("Error");
+              }
+              else {
+                const user_data = await response.json();
+                console.log(user_data);
+                if (user_data.code != 200) {
+                  console.log("User not found!")
+                }
+                else {
+                  this.daily_boxes = user_data.user.daily_boxes;
+                  if (user_data.user.is_member == "Y") {
+                    this.is_member = true;
+                    $("#member").addClass('alert alert-info');
+                    $("#member").html("As you are a member of GeoHunt, you will get <b>Double points</b> from opening boxes!");
+                  }
+                }
+              }
+          }
+        },
+        created: function() {
+          this.getUserData();
+        }
+        
+
+       });
+       
+       // Initialize and add the map
+        function initMap() {
+          // Initializing Treasure box Icon
+          var treasure = {
+            url:'../img/treasure.png',
+            scaledSize: new google.maps.Size(50, 50), // scaled size
+            origin: new google.maps.Point(0,0), // origin
+            anchor: new google.maps.Point(0, 0) // anchor
+          }
+          //default starting location
+         var map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 1.2983, lng: 103.8487},
+          zoom: 12
+        });
+        async function retrieveBoxes() {
+         try {
+           const response = await fetch(
+             box_URL, {method: 'GET'}
+           );
+
+           if (!response.ok) {
+             console.log("Error while retrieving boxes.")
+           }
+           else {
+             var box_data = await response.json();
+             //console.log(box_data);
+             for (box of box_data.boxes) {
+               //console.log(box);
+              const LatLng = { lat: parseFloat(box.box_latitude), lng: parseFloat(box.box_longitude) };
+              //console.log(LatLng);
+              new google.maps.Marker({
+                position: LatLng,
+                icon: treasure,
+                map,
+                title: box.planted_by_username,
+              });
+        }
+           }
+         }
+         catch(error) {
+           console.log("Error occurred before retrieving boxes: " + error)
+         }
+       }
+       retrieveBoxes();
+
+        
+        //get user location
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+
+            var posJSON = JSON.stringify(pos)
+
+
+          
+            //set user location
+          map.setCenter(pos);
+            
+           //get marker 
+          var marker = new google.maps.Marker({position: pos, map: map});
+            
+
+          }, function() {
+            handleLocationError(true, infoWindow, map.getCenter());
+          });
+        } else { // error handling
+          // Browser doesn't support Geolocation
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+      }
+
+      function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+        infoWindow.setPosition(pos);
+        infoWindow.setContent(browserHasGeolocation ?
+                              'Error: The Geolocation service failed.' :
+                              'Error: Your browser doesn\'t support geolocation.');
+        
+      }
+      var user = document.getElementById("current").value;
+      function plantBox() {
+        $("#map").css('z-index', -99999)
+        $("#loading").addClass('loading')
+        $("#overlay").addClass('uil-ring-css transform')
+        document.getElementById("notice").innerHTML = "";
+        var createbox_url = "http://localhost:8000/create_box"
+        async function plant() {
+          const response = await fetch(createbox_url, 
+            {
+              method: "POST", 
+              headers: {
+                           "Content-type": "application/json"
+                        },
+              body: JSON.stringify({"user": user})
+            }
+          );
+
+          if (!response.ok) {
+            console.log("Error creating box");
+            $("#map").css('z-index', 0)
+            $("#loading").removeClass('loading')
+            $("#overlay").removeClass('uil-ring-css transform')
+            
+          }
+          else {
+            const result_data = await response.json();
+            console.log(result_data);
+            $("#map").css('z-index', 0)
+            $("#loading").removeClass('loading')
+            $("#overlay").removeClass('uil-ring-css transform')
+            if (result_data.code != 201) {
+              document.getElementById("notice").innerHTML = `<div class="alert alert-danger" role="alert">
+                An error occurred while creating box: `+ result_data.message + `
+              </div>`;
+            }
+            else {
+              $('#plantBtn').attr("disabled",true);
+              $('#digBtn').attr("disabled",true);
+              document.getElementById("notice").innerHTML = `<div class="alert alert-success" role="alert">
+                Box created successfully. Refreshing the Map
+              </div>`;
+
+              setTimeout(function() {
+                window.location.replace("box_hunt.html");
+              }, 3000)
+            }
+          }
+        }
+        plant();
+      }
+
+      function digTreasure() {
+        $("#map").css('z-index', -99999)
+        $("#loading").addClass('loading')
+        $("#overlay").addClass('uil-ring-css transform')
+        document.getElementById("notice").innerHTML = "";
+        // TO BE COMPLETED
+        var box_open_url = "http://localhost:8000/box_opening"
+        async function dig() {
+          try {
+            const response = await fetch(box_open_url, {
+              method: 'POST',
+              headers: {
+                      "Content-type": "application/json"
+              },
+              body: JSON.stringify({"user": user})
+            });
+            
+            if (!response.ok) {
+              //console.log(response)
+              $("#map").css('z-index', 0)
+              $("#loading").removeClass('loading')
+              $("#overlay").removeClass('uil-ring-css transform')
+              console.log("Error occurred while trying to dig.")
+              document.getElementById("notice").innerHTML = `<div class="alert alert-danger" role="alert">
+              Error occurred while digging for treasure
+              </div>`;
+            }
+            else {
+              const box_data = await response.json();
+              console.log(box_data);
+              $("#map").css('z-index', 0)
+              $("#loading").removeClass('loading')
+              $("#overlay").removeClass('uil-ring-css transform')
+              // If no box found, own box found or other error
+              if (box_data.code == 200) {
+                document.getElementById("notice").innerHTML = `<div class="alert alert-success" role="alert">
+                You have found a box! You opened it and received <b>`+box_data.rewards.points+`</b> points. </div>`;
+                if (box_data.rewards.prize != "" && box_data.rewards.prize != null) {
+                  document.getElementById("notice").innerHTML += `
+                  <div class="alert alert-success" role="alert">
+                    You have also received the following prize from the box:
+                    <ul>
+                      <li>`+box_data.rewards.prize+`
+                    </ul>
+                    </div>`;
+                }
+              }
+              // Other error codes
+              else {
+                document.getElementById("notice").innerHTML = `<div class="alert alert-danger" role="alert">
+                `+box_data.message+`
+              </div>`;
+              }
+            }
+          }
+          catch(error) {
+            $("#map").css('z-index', 0)
+            $("#loading").removeClass('loading')
+            $("#overlay").removeClass('uil-ring-css transform')
+            document.getElementById("notice").innerHTML = `<div class="alert alert-danger" role="alert">
+              Error occurred while digging for treasure: `+error+`
+              </div>`;
+          }
+        }
+        dig();
+      }
+
+      
+        
+      
+    </script>
+
+    <!--Load the API from the specified URL
+    * The async attribute allows the browser to render the page while the API loads
+    * The key parameter will contain your own API key 
+    * The callback parameter executes the initMap() function
+    -->
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCQlWfUfcqz1MOyNdZRo-IG2vWh_2HT0Ko&callback=initMap">
+    </script>
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+  </body>
+</html>

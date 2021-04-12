@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="../static/css/dashboard.css">
+    <title>Dashboard</title>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <div id='app'>
+        <nav class="navbar navbar-expand-lg sticky-top navbar-light bg-light">
+            <a class="navbar-brand" href="#"> <img src='../img/logo.jpg' height=50 width=120> </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+              <ul class="navbar-nav">
+                <li class="nav-item active">
+                  <a class="nav-link" href="dashboard.html">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="order.html">Rewards Shop</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="box_hunt.html">Box Hunt</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="leaderboard.html">Leaderboards</a>
+                </li>
+                <li class="nav-item" v-if="is_member !== true">
+                  <a class="nav-link" href="payment.html">Buy Membership</a>
+                </li>
+                <li class="nav-item" v-else>
+                  <a class="nav-link disabled" href="payment.html">I'm a Member</a>
+                </li>
+              </ul>
+              <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Hi, {{ user }}
+                  </a>
+                  <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <a class="dropdown-item" href="inventory.html">My Inventory</a>
+                    <a class="dropdown-item" href="#">Log Out</a>
+                  </div>
+                </li>
+              </ul>
+            </div>
+        </nav>
+
+        <!-- TEMP STORAGE FOR USER-->
+        <input type='hidden' id='current' value='Michelle'>
+        <!-- TEMP STORAGE FOR USER-->
+        <div class="container">
+            <h3>Your current balance: {{ balance }} points</h3>
+
+            <h2>Your inventory:</h2>
+            <table class="table table-bordered">
+                <tr>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th>Redeem</th>
+                </tr>
+                <tr v-if="inventory.length === 0">
+                    <td colspan='4' class="text-center">You have no items in your inventory...Buy from the shop or open boxes to get some!</td>
+                </tr>
+                <tr v-else v-for="item of inventory">
+                    <td>{{ item.itemname }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td><a href='#'>Redeem</a></td> <!-- Doesnt work, just for show only -->
+                </tr>
+            </table>
+        </div>
+
+    </div>
+
+        
+    </div>
+
+    <script>
+        var user_URL = 'http://localhost:8000/user/'
+        var get_inventory_URL = 'http://localhost:8000/user/get_inventory/';
+        var get_balance_URL = 'http://localhost:8000/user/balance/';
+        var current_user = document.getElementById("current").value;
+        var app = new Vue({
+            el: "#app",
+            computed: {
+
+            },
+            data: {
+                "user": current_user,
+                "is_member": false,
+                "inventory": [],
+                "balance": "loading..."
+            },
+            methods: {
+                getUserData: async function() {
+                const response = 
+                  await fetch(user_URL + this.user, {method: 'GET'});
+
+                  if (!response.ok) {
+                    console.log("Error in getting User Data");
+                  }
+                  else {
+                    const user_data = await response.json();
+                    console.log(user_data);
+                    if (user_data.code != 200) {
+                      console.log("User not found!")
+                    }
+                    else {
+                      if (user_data.user.is_member == "Y") {
+                        this.is_member = true;
+                      }
+                    }
+                  }
+                },
+                getInventory: async function() {
+                    const response = await fetch(get_inventory_URL + this.user, {method: 'GET'});
+
+                    if (!response.ok) {
+                        console.log("Error in getting inventory");
+                    }
+                    else {
+                        const inventory_data = await response.json();
+                        console.log(inventory_data);
+                        if (inventory_data.code != 200) {
+                            console.log("GOT ERROR");
+                        }
+                        else {
+                            this.inventory = inventory_data.inventory;
+                        }
+                    }
+                },
+                getBalance: async function() {
+                    const response = await fetch(get_balance_URL + this.user, {method: 'GET'});
+
+                    if (!response.ok) {
+                        console.log("Error in getting Balance");
+                    }
+                    else {
+                        const balance_data = await response.json();
+                        console.log(balance_data);
+                        if (balance_data.code != 200) {
+                            console.log("Error with getting balance: " + balance_data.message);
+                        }
+                        else {
+                            this.balance = balance_data.data.current_points;
+                        }
+                    }
+                },
+                
+            },
+            created: function() {
+                this.getUserData();
+                this.getInventory();
+                this.getBalance();
+            }
+        });
+
+
+    </script>
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+
+</body>
+</html>
