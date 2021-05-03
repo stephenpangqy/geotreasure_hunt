@@ -7,7 +7,7 @@ app = Flask(__name__)
 def getGeoLocation():
     try:
         # THIS IS MY API KEY, please replace key='...' with your own if possible.
-        url = 'https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyA0J619B_oiVoB6E4OyX1EtJ-L2YaWj7ww'
+        url = 'https://www.googleapis.com/geolocation/v1/geolocate?key=insert_api_key'
         
         r = requests.post(url)
         return jsonify (
